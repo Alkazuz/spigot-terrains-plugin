@@ -1,0 +1,26 @@
+MaxRegions: 2
+MaxVipRegions: 5
+Prices:
+   PVP: 25000
+   FallDamage: 10000
+Sizes:
+    10:
+      Price: 1000
+      VipPrice: 850
+      MobSpawn: false
+    30:
+      Price: 2500
+      VipPrice: 2360
+      MobSpawn: false
+    50:
+      Price: 4000
+      VipPrice: 3800
+      MobSpawn: false
+    80:
+      Price: 6000
+      VipPrice: 5700
+      MobSpawn: false
+    100:
+      Price: 8000
+      VipPrice: 7600
+      MobSpawn: true
