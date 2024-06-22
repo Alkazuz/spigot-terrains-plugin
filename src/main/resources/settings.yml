@@ -1,5 +1,7 @@
 MaxRegions: 2
 MaxVipRegions: 5
+TerrainWorld: region
+DefaultWorld: world
 Prices:
    PVP: 25000
    FallDamage: 10000

@@ -8,6 +8,14 @@ import java.util.List;
 
 public class Settings {
     public static List<Size> SIZES = new ArrayList<>();
+    public static String DEFAULT_WORLD;
+
+    public static boolean MYSQL_ENABLED;
+    public static String MYSQL_HOST;
+    public static String MYSQL_DATABASE;
+    public static String MYSQL_USER;
+    public static String MYSQL_PASSWORD;
+    public static String TERRAIN_WORLD;
     public static int MAX_REGIONS;
     public static int MAX_VIP_REGIONS;
     public static int PVP_PRICE;
@@ -22,10 +30,17 @@ public class Settings {
                 boolean mobSpawn = config.getBoolean("Sizes." + key + ".MobSpawn");
                 SIZES.add(new Size(size, price, vipPrice, mobSpawn));
             }
+            TERRAIN_WORLD = config.getString("TerrainWorld");
+            MYSQL_ENABLED = config.getBoolean("MySQL.enabled");
+            MYSQL_HOST = config.getString("MySQL.host");
+            MYSQL_DATABASE = config.getString("MySQL.database");
+            MYSQL_USER = config.getString("MySQL.username");
+            MYSQL_PASSWORD = config.getString("MySQL.password");
             MAX_REGIONS = config.getInt("MaxRegions");
             MAX_VIP_REGIONS = config.getInt("MaxVipRegions");
             PVP_PRICE = config.getInt("Prices.PVP");
             FALL_DAMAGE_PRICE = config.getInt("Prices.FallDamage");
+            DEFAULT_WORLD = config.getString("DefaultWorld");
         } catch (Exception e){
             e.printStackTrace();
         }

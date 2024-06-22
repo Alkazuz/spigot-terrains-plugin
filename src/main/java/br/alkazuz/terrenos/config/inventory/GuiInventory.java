@@ -2,12 +2,11 @@ package br.alkazuz.terrenos.config.inventory;
 
 import br.alkazuz.terrenos.Main;
 import br.alkazuz.terrenos.config.Settings;
-import br.alkazuz.utils.GuiHolder;
-import br.alkazuz.utils.ItemBuilder;
+import br.alkazuz.terrenos.utils.GuiHolder;
+import br.alkazuz.terrenos.utils.ItemBuilder;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.inventory.ItemStack;
 
 import java.text.NumberFormat;
 import java.util.HashMap;

@@ -1,6 +1,5 @@
 package br.alkazuz.terrenos.command;
 
-import br.alkazuz.terrenos.command.sub.SubcommandAmigo;
 import br.alkazuz.terrenos.command.sub.SubcommandInfo;
 import br.alkazuz.terrenos.command.sub.SubcommandVender;
 
@@ -12,7 +11,6 @@ public class SubCommands {
 
     public static void load() {
         registerSubCommand(new SubcommandInfo());
-        registerSubCommand(new SubcommandAmigo());
         registerSubCommand(new SubcommandVender());
     }
 

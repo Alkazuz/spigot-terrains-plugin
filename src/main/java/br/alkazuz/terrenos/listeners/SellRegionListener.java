@@ -1,8 +1,8 @@
 package br.alkazuz.terrenos.listeners;
 
 import br.alkazuz.terrenos.Main;
+import br.alkazuz.terrenos.object.Terreno;
 import br.alkazuz.terrenos.utils.TerrenoManager;
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Material;
 import org.bukkit.block.Sign;
@@ -25,19 +25,19 @@ public class SellRegionListener implements org.bukkit.event.Listener {
         if (!isSellSign(sign)) { // if (!isSellSign(sign)) {
             return;
         }
-        ProtectedRegion region = TerrenoManager.getProtectedRegion(e.getBlock().getLocation());
+        Terreno region = TerrenoManager.getTerrenoInLocation(e.getBlock().getLocation());
         if (region == null) {
             e.getBlock().breakNaturally();
             return;
         }
         e.setCancelled(true);
-        if (region.getOwners().contains(player.getName())) {
+        if (region.getOwner().equals(player.getName())) {
             e.getBlock().breakNaturally();
             player.sendMessage("§aVocê removeu a placa de venda do seu terreno.");
         }
     }
 
-    @EventHandler(ignoreCancelled = false, priority = org.bukkit.event.EventPriority.HIGHEST)
+    @EventHandler(priority = org.bukkit.event.EventPriority.HIGHEST)
     public void onRightClickBlockInteract(PlayerInteractEvent e) {
         Player player = e.getPlayer();
         if (!player.getWorld().getName().equals("region")) {
@@ -57,20 +57,15 @@ public class SellRegionListener implements org.bukkit.event.Listener {
             return;
         }
         e.setCancelled(true);
-        ProtectedRegion region = TerrenoManager.getProtectedRegion(e.getClickedBlock().getLocation());
+        Terreno region = TerrenoManager.getTerrenoInLocation(e.getClickedBlock().getLocation());
         if (region == null) {
             player.sendMessage("§cEsta placa não está em um terreno.");
             sign.setType(Material.AIR);
             return;
         }
 
-        if (region.getOwners().contains(player.getName())) {
-            player.sendMessage("§cVocê  não pode comprar seu próprio terreno.");
-            return;
-        }
-
-        if (region.getMembers().contains(player.getName())) {
-            player.sendMessage("§cVocê  não pode comprar um terreno que você é membro.");
+        if (region.getOwner().equals(player.getName())) {
+            player.sendMessage("§cVocê não pode comprar seu próprio terreno.");
             return;
         }
 
@@ -81,16 +76,15 @@ public class SellRegionListener implements org.bukkit.event.Listener {
         }
 
         Economy economy = Main.getInstance().getEconomy();
-        if (economy.getBalance(player) < price) {
+        if (economy.getBalance(player.getName()) < price) {
             player.sendMessage("§cVocê não tem dinheiro suficiente para comprar este terreno.");
             return;
         }
 
         try {
-            TerrenoManager.buyRegion(player, region, price);
+           // TerrenoManager.buyRegion(player, region, price);
             player.sendMessage("§aVocê comprou esse terreno por §f" + economy.format(price) + " coins§a.");
         } catch (Exception ex) {
-            ex.printStackTrace();
             player.sendMessage("§c" + ex.getMessage());
         }
 

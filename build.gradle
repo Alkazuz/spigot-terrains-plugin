@@ -18,14 +18,11 @@ repositories {
 }
 
 dependencies {
-    implementation files('C:\\Users\\Marcos\\Documents\\Plugin\\spigot-1.5.2-R1.1-SNAPSHOT.jar')
-    implementation files('C:\\Users\\Marcos\\Documents\\Plugin\\Servidor\\plugins\\WorldGuard.jar')
-    implementation files('C:\\Users\\Marcos\\Documents\\Plugin\\Servidor\\plugins\\ProtocolLib-2.4.3.jar')
-    implementation files('C:\\Users\\Marcos\\Documents\\Plugin\\Servidor\\plugins\\WorldEdit.jar')
-    implementation files('C:\\Users\\Marcos\\Documents\\Plugin\\Servidor\\plugins\\Core-1.0-SNAPSHOT.jar')
-    implementation files('C:\\Users\\Marcos\\Documents\\Plugin\\Vault.jar')
-    implementation files('C:\\Users\\Marcos\\Documents\\Plugin\\mcMMO.jar')
-
+    implementation files('D:\\server 1.5.2 - Copia\\spigot-1.5.2-R1.1-SNAPSHOT.jar')
+    implementation files('D:\\server 1.5.2 - Copia\\plugins\\Legendchat.jar')
+    implementation files('D:\\server 1.5.2 - Copia\\plugins\\Vault.jar')
+    implementation files('D:\\server 1.5.2 - Copia\\plugins\\mcMMO.jar')
+    implementation files('D:\\server 1.5.2 - Copia\\plugins\\ProtocolLib-2.4.3.jar')
 }
 
 def targetJavaVersion = 8
@@ -38,7 +35,15 @@ java {
     }
 }
 
+jar {
+    archiveBaseName = project.name
+    archiveVersion = project.version
+    archiveClassifier = ''
+    destinationDirectory = file("D:\\server 1.5.2 - Copia\\plugins")
+}
+
 tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
     if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
         options.release = targetJavaVersion
     }

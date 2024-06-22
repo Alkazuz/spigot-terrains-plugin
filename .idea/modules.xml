@@ -4,6 +4,8 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Terrenos.main.iml" filepath="$PROJECT_DIR$/.idea/modules/Terrenos.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Terrenos.test.iml" filepath="$PROJECT_DIR$/.idea/modules/Terrenos.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/br.alkazuz.Terrenos.main.iml" filepath="$PROJECT_DIR$/.idea/modules/br.alkazuz.Terrenos.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/br.alkazuz.Terrenos.test.iml" filepath="$PROJECT_DIR$/.idea/modules/br.alkazuz.Terrenos.test.iml" />
     </modules>
   </component>
 </project>

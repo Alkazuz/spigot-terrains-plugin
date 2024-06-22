@@ -2,23 +2,19 @@ package br.alkazuz.terrenos.config.inventory.listen;
 
 import br.alkazuz.terrenos.config.Settings;
 import br.alkazuz.terrenos.config.inventory.GuiInventory;
+import br.alkazuz.terrenos.utils.GuiHolder;
 import br.alkazuz.terrenos.utils.TerrenoManager;
-import br.alkazuz.utils.GuiHolder;
-import com.sk89q.worldguard.protection.flags.InvalidFlagFormat;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Set;
-
-public class InventoryClickListenner implements org.bukkit.event.Listener {
-
-
+public class InventoryClickListenner implements Listener {
     @EventHandler
-    public void onClickShop(final InventoryClickEvent e) throws InvalidFlagFormat {
+    public void onClickShop(final InventoryClickEvent e) {
         if (e.getInventory().getHolder() instanceof GuiHolder) {
             Player p = (Player) e.getWhoClicked();
             GuiHolder holder = (GuiHolder) e.getInventory().getHolder();
@@ -37,8 +33,9 @@ public class InventoryClickListenner implements org.bukkit.event.Listener {
         }
     }
 
+    private Long lastFindEmptyTime = 0L;
     @EventHandler
-    public void onClickShopConfirm(final InventoryClickEvent e) throws InvalidFlagFormat {
+    public void onClickShopConfirm(final InventoryClickEvent e) {
         if (e.getInventory().getHolder() instanceof GuiHolder) {
             Player p = (Player) e.getWhoClicked();
             GuiHolder holder = (GuiHolder) e.getInventory().getHolder();
@@ -46,9 +43,17 @@ public class InventoryClickListenner implements org.bukkit.event.Listener {
             if (guiID == 9247) {
                 Settings.Size size = Settings.SIZES.stream().filter(s -> (int)holder.getProperty("size") == s.getSize()).findFirst().orElse(null);
                 e.setCancelled(true);
-
+                if (size == null) return;
                 if (e.getSlot() == 6) {
+                    if (System.currentTimeMillis() - lastFindEmptyTime < 5000) {
+                        p.sendMessage("§cUm terreno já foi criado recentemente por outro jogador, aguarde um pouco.");
+                        return;
+                    }
+
+                    lastFindEmptyTime = System.currentTimeMillis();
+
                     Location randomLoc = TerrenoManager.findRandomEmptyRegionLocation(p.getWorld(), size);
+
                     p.closeInventory();
                     if (randomLoc == null) {
                         p.sendMessage("§cNão foi possível encontrar um terreno livre.");
@@ -81,7 +86,7 @@ public class InventoryClickListenner implements org.bukkit.event.Listener {
     }
 
     @EventHandler
-    public void onClickInventoryMain(final InventoryClickEvent e) throws InvalidFlagFormat {
+    public void onClickInventoryMain(final InventoryClickEvent e) {
         if (e.getInventory().getHolder() instanceof GuiHolder) {
             Player p = (Player) e.getWhoClicked();
             GuiHolder holder = (GuiHolder) e.getInventory().getHolder();
