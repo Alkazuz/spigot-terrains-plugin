@@ -70,35 +70,6 @@ public class TerrenoManager {
 
     }
 
-    private static void loadTerrainsForChunk(Chunk chunk) {
-        DBCore database = main.getDBCore();
-        String query = "SELECT * FROM `core_terrenos` WHERE `x1` <= ? AND `x2` >= ? AND `z1` <= ? AND `z2` >= ? AND `world` = ?";
-
-        try (PreparedStatement ps = database.prepareStatement(query)) {
-            ps.setInt(1, chunk.getX() * 16);
-            ps.setInt(2, chunk.getX() * 16 + 15);
-            ps.setInt(3, chunk.getZ() * 16);
-            ps.setInt(4, chunk.getZ() * 16 + 15);
-            ps.setString(5, chunk.getWorld().getName());
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                int id = rs.getInt("id");
-                int x1 = rs.getInt("x1");
-                int x2 = rs.getInt("x2");
-                int z1 = rs.getInt("z1");
-                int z2 = rs.getInt("z2");
-                String owner = rs.getString("owner");
-                String world = rs.getString("world");
-
-                Terreno terreno = new Terreno(id, owner, x1, x2, z1, z2, world);
-                int computeTerrainHash = Serializer.computeHash(terreno);
-                terrenos.put(computeTerrainHash, terreno);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     public static void loadTerrainsInRadius(Chunk centerChunk, int radius) {
         World world = centerChunk.getWorld();
         int loadedCount = 0;
@@ -350,7 +321,7 @@ public class TerrenoManager {
     private static void makeBorderFance(Location location, Settings.Size size) {
         int x = location.getBlockX();
         int z = location.getBlockZ();
-        int y = location.getBlockY();
+        int y = 4;
         World world = location.getWorld();
         for (int i = x - (size.getSize() / 2); i < x + (size.getSize() / 2); i++) {
             for (int j = z - (size.getSize() / 2); j < z + (size.getSize() / 2); j++) {
@@ -385,5 +356,9 @@ public class TerrenoManager {
 
     public static Terreno getTerrenoById(int i) {
         return terrenos.values().stream().filter(terreno -> terreno.getId() == i).findFirst().orElse(null);
+    }
+
+    public static void removeTerreno(Terreno terreno) {
+        terrenos.remove(Serializer.computeHash(terreno));
     }
 }

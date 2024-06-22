@@ -1,11 +1,14 @@
 package br.alkazuz.terrenos.workload;
 
+import br.alkazuz.terrenos.object.PlayerTerrenoManager;
 import br.alkazuz.terrenos.object.Terreno;
+import br.alkazuz.terrenos.utils.TerrenoManager;
 import br.alkazuz.terrenos.workload.workloads.PlaceBlock;
 import br.alkazuz.terrenos.workload.workloads.WorkLoad;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayDeque;
@@ -19,9 +22,11 @@ public class ClearTerrenoWorkload implements Runnable {
     private final Deque<WorkLoad> workloads = new ArrayDeque<>();
     public boolean finished = false;
     private BukkitTask task;
+    private final Terreno terreno;
 
     public ClearTerrenoWorkload(Terreno terreno, BukkitTask task) {
         this.task = task;
+        this.terreno = terreno;
         Location initial = new Location(Bukkit.getWorld(terreno.getWorld()), terreno.getX1(), 0, terreno.getZ1());
         Location end = new Location(Bukkit.getWorld(terreno.getWorld()), terreno.getX2(), 256, terreno.getZ2());
 
@@ -47,7 +52,15 @@ public class ClearTerrenoWorkload implements Runnable {
         if (workloads.isEmpty()) {
             finished = true;
             if (task != null) {
+                terreno.delete();
+                TerrenoManager.removeTerreno(terreno);
+                PlayerTerrenoManager.removeTerreno(terreno);
                 task.cancel();
+                String owner = terreno.getOwner();
+                Player player = Bukkit.getPlayer(owner);
+                if (player != null) {
+                    player.sendMessage("§aSeu terreno foi deletado com sucesso.");
+                }
             }
         }
     }

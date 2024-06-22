@@ -117,4 +117,10 @@ public class PlayerTerrenoManager {
 
         map.put(playerTerreno.getTerreno().getId(), playerTerreno);
     }
+
+    public static void removeTerreno(Terreno terreno) {
+        for (HashMap<Integer, PlayerTerreno> map : playerTerrenos.values()) {
+            map.remove(terreno.getId());
+        }
+    }
 }

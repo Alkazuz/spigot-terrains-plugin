@@ -2,6 +2,7 @@ package br.alkazuz.terrenos.command.sub;
 
 import br.alkazuz.terrenos.Main;
 import br.alkazuz.terrenos.command.SubCommandBase;
+import br.alkazuz.terrenos.inventory.GuiDeleteInventory;
 import br.alkazuz.terrenos.object.Terreno;
 import br.alkazuz.terrenos.utils.TerrenoManager;
 import br.alkazuz.terrenos.workload.ClearTerrenoWorkload;
@@ -34,9 +35,7 @@ public class SubcommandDeletar extends SubCommandBase {
             return true;
         }
 
-        ClearTerrenoWorkload workload = new ClearTerrenoWorkload(region, null);
-        BukkitTask task = Bukkit.getServer().getScheduler().runTaskTimer(Main.getInstance(), workload, 1L, 1L);
-        workload.setTask(task);
+        GuiDeleteInventory.open(player, region);
         return true;
     }
 

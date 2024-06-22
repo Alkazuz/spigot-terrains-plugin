@@ -3,10 +3,7 @@ package br.alkazuz.terrenos;
 import br.alkazuz.terrenos.command.CommandTerreno;
 import br.alkazuz.terrenos.command.SubCommands;
 import br.alkazuz.terrenos.config.Settings;
-import br.alkazuz.terrenos.inventory.GuiBuyInventory;
-import br.alkazuz.terrenos.inventory.GuiFlagsInventory;
-import br.alkazuz.terrenos.inventory.GuiPermsInventory;
-import br.alkazuz.terrenos.inventory.GuiTerrenosInventory;
+import br.alkazuz.terrenos.inventory.*;
 import br.alkazuz.terrenos.listeners.PlayerInTerrainListener;
 import br.alkazuz.terrenos.inventory.listen.InventoryClickListenner;
 import br.alkazuz.terrenos.config.manager.ConfigManager;
@@ -77,6 +74,7 @@ public class Main extends JavaPlugin {
         pm.registerEvents(new GuiFlagsInventory(), this);
         pm.registerEvents(new GuiBuyInventory(), this);
         pm.registerEvents(new GuiTerrenosInventory(), this);
+        pm.registerEvents(new GuiDeleteInventory(), this);
         pm.registerEvents(new PlayerJoinListener(), this);
 
         getCommand("terreno").setExecutor(new CommandTerreno());

@@ -207,4 +207,28 @@ public class Terreno {
     public Location getCenter() {
         return new Location(Bukkit.getWorld(world), (x1 + x2) / 2, 10, (z1 + z2) / 2);
     }
+
+    public void delete() {
+        Bukkit.getScheduler().runTaskAsynchronously(Main.getInstance(), () -> {
+            DBCore db = Main.getInstance().getDBCore();
+            try {
+                try (PreparedStatement ps = db.prepareStatement("DELETE FROM `core_terrenos` WHERE `id` = ?;")) {
+                    ps.setInt(1, id);
+                    ps.executeUpdate();
+                }
+
+                try (PreparedStatement ps = db.prepareStatement("DELETE FROM `core_terrenos_flags` WHERE `terreno_id` = ?;")) {
+                    ps.setInt(1, id);
+                    ps.executeUpdate();
+                }
+
+                try (PreparedStatement ps = db.prepareStatement("DELETE FROM `core_terrenos_perms` WHERE `terreno_id` = ?;")) {
+                    ps.setInt(1, id);
+                    ps.executeUpdate();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
 }
