@@ -6,7 +6,9 @@ import org.bukkit.entity.Player;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class PlayerTerrenoManager {
     private static final PlayerTerreno DEFAULT_PLAYER = new PlayerTerreno(null);
@@ -71,6 +73,34 @@ public class PlayerTerrenoManager {
         map.put(terreno.getId(), playerTerreno);
 
         return playerTerreno;
+    }
+
+    public static List<String> getAllPlayerWithPermissions(Terreno terreno) {
+        DBCore dbCore = Main.getInstance().getDBCore();
+        List<String> players = new ArrayList<>();
+        String query = "SELECT `player` FROM `core_terrenos_perms` WHERE `terreno_id` = ? AND (`placeblock` = ? OR `breakblock` = ?)";
+        try {
+            PreparedStatement stm = dbCore.prepareStatement(query);
+            stm.setInt(1, terreno.getId());
+            stm.setBoolean(2, true);
+            stm.setBoolean(3, true);
+
+            ResultSet rs = stm.executeQuery();
+            while (rs.next()) {
+                players.add(rs.getString("player"));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return players;
+    }
+
+    public static void clearPlayersInTerrain(Terreno terreno) {
+        for (HashMap<Integer, PlayerTerreno> map : playerTerrenos.values()) {
+            map.remove(terreno.getId());
+        }
     }
 
     public static PlayerTerreno getPlayerTerreno(Player player, Terreno terreno) {

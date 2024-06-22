@@ -7,10 +7,12 @@ import br.alkazuz.terrenos.object.Terreno;
 import br.alkazuz.terrenos.utils.TerrenoManager;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 public class PlayerInTerrainListener implements Listener {
@@ -33,6 +35,32 @@ public class PlayerInTerrainListener implements Listener {
         }
     }
 
+    @EventHandler
+    public void onPlayerPreCommand(PlayerCommandPreprocessEvent event) {
+        if (event.getPlayer().hasPermission("terrenos.admin")) return;
+        if (!event.getPlayer().getWorld().getName().equalsIgnoreCase(Settings.TERRAIN_WORLD)) return;
+        if (event.isCancelled()) return;
+        Terreno terreno = TerrenoManager.getTerrenoInLocation(event.getPlayer().getLocation());
+        if (terreno == null) {
+            return;
+        }
+        String msg = event.getMessage().toLowerCase();
+
+        if (terreno.getOwner().equalsIgnoreCase(event.getPlayer().getName())) return;
+
+        PlayerTerreno playerTerreno = PlayerTerrenoManager.getPlayerTerrenoOrDefault(event.getPlayer(), terreno);
+        if (playerTerreno.canUseCommands()) return;
+
+        if (!terreno.canSetHome() && msg.startsWith("/sethome")) {
+            event.setCancelled(true);
+            event.getPlayer().sendMessage("§cVocê não pode usar esse comando nesse terreno.");
+
+        } else if (!terreno.canTpAccept() && msg.startsWith("/tpaccept")) {
+            event.setCancelled(true);
+            event.getPlayer().sendMessage("§cVocê não pode usar esse comando nesse terreno.");
+        }
+    }
+
     @EventHandler(priority = org.bukkit.event.EventPriority.HIGHEST)
     public void onPlace(org.bukkit.event.block.BlockPlaceEvent e) {
         if (e.getPlayer().hasPermission("terrenos.admin")) return;
@@ -52,7 +80,7 @@ public class PlayerInTerrainListener implements Listener {
         }
     }
 
-    @EventHandler(priority = org.bukkit.event.EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onPvp(EntityDamageByEntityEvent event) {
         if (!event.getEntity().getWorld().getName().equalsIgnoreCase(Settings.TERRAIN_WORLD)) return;
         if (event.isCancelled()) return;
@@ -62,6 +90,10 @@ public class PlayerInTerrainListener implements Listener {
         if (!(event.getEntity() instanceof Player)) return;
         Terreno terreno = TerrenoManager.getTerrenoInLocation(event.getEntity().getLocation());
         if (terreno == null) return;
+        if (terreno.isPvp24()) {
+            event.setCancelled(false);
+            return;
+        }
         if (terreno.isPvp()) return;
 
         event.setCancelled(true);

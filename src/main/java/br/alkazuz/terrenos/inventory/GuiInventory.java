@@ -1,4 +1,4 @@
-package br.alkazuz.terrenos.config.inventory;
+package br.alkazuz.terrenos.inventory;
 
 import br.alkazuz.terrenos.Main;
 import br.alkazuz.terrenos.config.Settings;

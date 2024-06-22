@@ -1,14 +1,12 @@
-package br.alkazuz.terrenos.config.inventory;
+package br.alkazuz.terrenos.inventory;
 
 import br.alkazuz.terrenos.Main;
-import br.alkazuz.terrenos.config.Settings;
 import br.alkazuz.terrenos.object.PlayerTerreno;
 import br.alkazuz.terrenos.object.PlayerTerrenoManager;
 import br.alkazuz.terrenos.object.Terreno;
 import br.alkazuz.terrenos.perms.EPermissions;
 import br.alkazuz.terrenos.utils.GuiHolder;
 import br.alkazuz.terrenos.utils.ItemBuilder;
-import br.alkazuz.terrenos.utils.TerrenoManager;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -19,7 +17,6 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import java.text.NumberFormat;
 import java.util.HashMap;
 
 public class GuiPermsInventory implements Listener {

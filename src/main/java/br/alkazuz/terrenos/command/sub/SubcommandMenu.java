@@ -1,9 +1,7 @@
 package br.alkazuz.terrenos.command.sub;
 
 import br.alkazuz.terrenos.command.SubCommandBase;
-import br.alkazuz.terrenos.config.inventory.GuiInventory;
-import br.alkazuz.terrenos.utils.TerrenoManager;
-import org.bukkit.Location;
+import br.alkazuz.terrenos.inventory.GuiInventory;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 

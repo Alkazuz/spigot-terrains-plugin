@@ -1,6 +1,7 @@
 package br.alkazuz.terrenos.command;
 
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 public class SubCommandBase {
     private final String name;
@@ -13,6 +14,10 @@ public class SubCommandBase {
         this.permission = permission;
         this.usage = usage;
         this.description = description;
+    }
+
+    public boolean avaibleForPlayer(Player player) {
+        return true;
     }
 
     public String getName() {

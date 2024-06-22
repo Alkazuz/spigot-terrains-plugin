@@ -1,6 +1,7 @@
 package br.alkazuz.terrenos.object;
 
 import br.alkazuz.terrenos.Main;
+import br.alkazuz.terrenos.TerrenoFlags;
 import br.alkazuz.terrenos.storage.DBCore;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -99,12 +100,32 @@ public class Terreno {
         return this.flags.get(key);
     }
 
-    public boolean isPvp() {
-        if (!flags.containsKey("pvp")) {
-            return true;
-        }
+    public Object getFlagOrDefault(String key, Object def) {
+        return this.flags.getOrDefault(key, def);
+    }
 
-        return (boolean) flags.get("pvp");
+    public boolean getFlagBooleanOrDefault(String key, boolean def) {
+        return Boolean.parseBoolean((String) getFlagOrDefault(key, def));
+    }
+
+    public boolean isPvp() {
+        return Boolean.parseBoolean((String) getFlagOrDefault(TerrenoFlags.PVP.getFlag(), TerrenoFlags.PVP.getDefaultValue()));
+    }
+
+    public boolean isPvp24() {
+        return Boolean.parseBoolean((String) getFlagOrDefault(TerrenoFlags.PVP_24H.getFlag(), TerrenoFlags.PVP_24H.getDefaultValue()));
+    }
+
+    public boolean canSetHome() {
+        return Boolean.parseBoolean((String) getFlagOrDefault(TerrenoFlags.SET_HOME.getFlag(), TerrenoFlags.SET_HOME.getDefaultValue()));
+    }
+
+    public boolean canTpAccept() {
+        return Boolean.parseBoolean((String) getFlagOrDefault(TerrenoFlags.TP_ACCEPT.getFlag(), TerrenoFlags.TP_ACCEPT.getDefaultValue()));
+    }
+
+    public HashMap<String, Object> getFlags() {
+        return this.flags;
     }
 
     public void save() {
@@ -142,6 +163,26 @@ public class Terreno {
         });
     }
 
+    public void loadFlags() {
+        Bukkit.getScheduler().runTaskAsynchronously(Main.getInstance(), () -> {
+            DBCore db = Main.getInstance().getDBCore();
+            String sql = "SELECT `key`, `value` FROM `core_terrenos_flags` WHERE `terreno_id` = ?;";
+
+            try (PreparedStatement ps = db.prepareStatement(sql)) {
+                ps.setInt(1, id);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        String key = rs.getString("key");
+                        String value = rs.getString("value");
+                        flags.put(key, value);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
     public void saveFlags() {
         Bukkit.getScheduler().runTaskAsynchronously(Main.getInstance(), () -> {
             DBCore db = Main.getInstance().getDBCore();
@@ -163,5 +204,7 @@ public class Terreno {
         });
     }
 
-
+    public Location getCenter() {
+        return new Location(Bukkit.getWorld(world), (x1 + x2) / 2, 10, (z1 + z2) / 2);
+    }
 }

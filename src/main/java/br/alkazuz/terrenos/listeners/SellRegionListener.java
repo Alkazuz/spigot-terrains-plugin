@@ -1,9 +1,11 @@
 package br.alkazuz.terrenos.listeners;
 
 import br.alkazuz.terrenos.Main;
+import br.alkazuz.terrenos.inventory.GuiBuyInventory;
 import br.alkazuz.terrenos.object.Terreno;
 import br.alkazuz.terrenos.utils.TerrenoManager;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -69,7 +71,7 @@ public class SellRegionListener implements org.bukkit.event.Listener {
             return;
         }
 
-        int price = Integer.parseInt(sign.getLine(1).replace("§f", "").replace("§a", "").replace(" ", "").replace(".", ""));
+        int price = Integer.parseInt(ChatColor.stripColor(sign.getLine(2).replace(",", "")));
         if (price < 0) {
             player.sendMessage("§cO preço deve ser maior que 0.");
             return;
@@ -81,12 +83,7 @@ public class SellRegionListener implements org.bukkit.event.Listener {
             return;
         }
 
-        try {
-           // TerrenoManager.buyRegion(player, region, price);
-            player.sendMessage("§aVocê comprou esse terreno por §f" + economy.format(price) + " coins§a.");
-        } catch (Exception ex) {
-            player.sendMessage("§c" + ex.getMessage());
-        }
+        GuiBuyInventory.openConfirmShop(player, region, price, sign);
 
     }
 

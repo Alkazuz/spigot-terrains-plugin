@@ -2,14 +2,12 @@ package br.alkazuz.terrenos.utils;
 
 import br.alkazuz.terrenos.Main;
 import br.alkazuz.terrenos.config.Settings;
+import br.alkazuz.terrenos.object.PlayerTerrenoManager;
 import br.alkazuz.terrenos.object.Terreno;
 import br.alkazuz.terrenos.storage.DBCore;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
@@ -19,7 +17,9 @@ import java.sql.ResultSet;
 import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 public class TerrenoManager {
     private static final Main main = Main.getInstance();
@@ -139,7 +139,6 @@ public class TerrenoManager {
             ps.setString(5, world.getName());
 
             ResultSet rs = ps.executeQuery();
-            int count = 0;
 
             while (rs.next()) {
                 int id = rs.getInt("id");
@@ -151,11 +150,11 @@ public class TerrenoManager {
                 String worldName = rs.getString("world");
 
                 Terreno terreno = new Terreno(id, owner, x1, x2, z1, z2, worldName);
+                terreno.loadFlags();
                 int computeTerrainHash = Serializer.computeHash(terreno);
 
                 if (!terrenos.containsKey(computeTerrainHash)) {
                     terrenos.put(computeTerrainHash, terreno);
-                    count++;
                 }
             }
 
@@ -175,25 +174,65 @@ public class TerrenoManager {
         return null;
     }
 
+    public static void loadPlayerTerrenos(Player player) {
+        Bukkit.getScheduler().runTaskAsynchronously(main, () -> {
+            DBCore database = main.getDBCore();
+            String query = "SELECT * FROM `core_terrenos` WHERE `owner` = ?";
+            int count = 0;
+            try (PreparedStatement ps = database.prepareStatement(query)) {
+                ps.setString(1, player.getName());
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    int id = rs.getInt("id");
+                    int x1 = rs.getInt("x1");
+                    int x2 = rs.getInt("x2");
+                    int z1 = rs.getInt("z1");
+                    int z2 = rs.getInt("z2");
+                    String owner = rs.getString("owner");
+                    String world = rs.getString("world");
+
+                    Terreno terreno = new Terreno(id, owner, x1, x2, z1, z2, world);
+                    terreno.loadFlags();
+                    int computeTerrainHash = Serializer.computeHash(terreno);
+                    if (!terrenos.containsKey(computeTerrainHash)) {
+                        terrenos.put(computeTerrainHash, terreno);
+                        count++;
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            Main.debug("Foram carregados " + count + " terrenos para o jogador " + player.getName());
+        });
+    }
+
+    public static List<Terreno> getTerrenosOfPlayer(Player player) {
+        return terrenos.values().stream().filter(terreno -> terreno.getOwner().equalsIgnoreCase(player.getName())).collect(Collectors.toList());
+    }
+
     public static String getRegionMessageInfo(Location location) {
         StringBuilder stringBuilder = new StringBuilder();
         Terreno regionInfo = getTerrenoInLocation(location);
         if (regionInfo == null) {
             stringBuilder.append("§cVocê não está em um terreno.");
         } else {
-            stringBuilder.append("§eInformações do terreno:\n");
-            stringBuilder.append("§eDono: §f").append(PlayerUtils.getPlayerPrefix(regionInfo.getOwner())).append("\n");
-            /*stringBuilder.append(String.format("§eAmigos (%d): §f", regionInfo.getFriends().size()));
-            if (regionInfo.getFriends().size() == 0){
-                stringBuilder.append("§cNenhum amigo adicionado.\n");
-            } else {
-                for (String friend : regionInfo.getFriends()) {
-                    stringBuilder.append(friend).append(", ");
-                }
-                stringBuilder.delete(stringBuilder.length() - 2, stringBuilder.length());
-                stringBuilder.append("\n");
-            }*/
+            stringBuilder.append("§e\n§e§lInformações do terreno\n");
+            stringBuilder.append("§eDono: §f").append(PlayerUtils.getPlayerPrefix(regionInfo.getOwner()) + regionInfo.getOwner()).append("\n");
             stringBuilder.append("§ePvP: §f").append(regionInfo.isPvp() ? "§aLigado" : "§cDesligado").append("\n");
+            stringBuilder.append("§ePvP 24 horas: §f").append(regionInfo.isPvp24() ? "§aLigado" : "§cDesligado").append("\n");
+            stringBuilder.append("§ePermitido usar /sethome: §f").append(regionInfo.canSetHome() ? "§aSim" : "§cNão").append("\n");
+            stringBuilder.append("§ePermitido usar /tpaccept: §f").append(regionInfo.canTpAccept() ? "§aSim" : "§cNão").append("\n");
+            List<String> players = PlayerTerrenoManager.getAllPlayerWithPermissions(regionInfo);
+            stringBuilder.append("§eJogadores com permissão (").append(players.size()).append("): \n§f");
+            for (String player : players) {
+                stringBuilder.append(player).append(", ");
+            }
+            if (!players.isEmpty()) {
+                stringBuilder.delete(stringBuilder.length() - 2, stringBuilder.length());
+            }
+            stringBuilder.append("\n§e");
+
         }
         return stringBuilder.toString();
     }
@@ -320,5 +359,31 @@ public class TerrenoManager {
                 world.getBlockAt(i, y + 1, j).setType(Material.AIR);
             }
         }
+    }
+
+    public static void buyRegion(Player player, Terreno region, double price) {
+        Economy economy = main.getEconomy();
+        String owner = region.getOwner();
+
+        if (economy.getBalance(player.getName()) < price) {
+            throw new IllegalArgumentException("Você não tem dinheiro suficiente para comprar este terreno.");
+        }
+
+        if (!economy.withdrawPlayer(player.getName(), price).transactionSuccess()) {
+            throw new IllegalArgumentException("Ocorreu um erro ao retirar o dinheiro da sua conta.");
+        }
+
+        if (!economy.depositPlayer(owner, price).transactionSuccess()) {
+            economy.depositPlayer(player.getName(), price);
+            throw new IllegalArgumentException("Ocorreu um erro ao depositar o dinheiro na conta do dono.");
+        }
+
+        region.setOwner(player.getName());
+        PlayerTerrenoManager.clearPlayersInTerrain(region);
+        region.save();
+    }
+
+    public static Terreno getTerrenoById(int i) {
+        return terrenos.values().stream().filter(terreno -> terreno.getId() == i).findFirst().orElse(null);
     }
 }

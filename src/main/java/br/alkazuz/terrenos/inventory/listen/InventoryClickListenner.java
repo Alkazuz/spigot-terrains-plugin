@@ -1,7 +1,8 @@
-package br.alkazuz.terrenos.config.inventory.listen;
+package br.alkazuz.terrenos.inventory.listen;
 
 import br.alkazuz.terrenos.config.Settings;
-import br.alkazuz.terrenos.config.inventory.GuiInventory;
+import br.alkazuz.terrenos.inventory.GuiInventory;
+import br.alkazuz.terrenos.inventory.GuiTerrenosInventory;
 import br.alkazuz.terrenos.utils.GuiHolder;
 import br.alkazuz.terrenos.utils.TerrenoManager;
 import org.bukkit.ChatColor;
@@ -94,11 +95,12 @@ public class InventoryClickListenner implements Listener {
             if (guiID == 9248) {
                 e.setCancelled(true);
                 if (e.getSlot() == 3) {
-
+                    p.chat("/terreno info");
+                    p.closeInventory();
                 } else if (e.getSlot() == 4) {
                     GuiInventory.openShop(p);
                 } else if (e.getSlot() == 5) {
-                    // GuiInventory.openTeleport(p);
+                    GuiTerrenosInventory.open(p);
                 }
             }
         }

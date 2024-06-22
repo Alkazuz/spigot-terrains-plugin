@@ -1,6 +1,7 @@
 package br.alkazuz.terrenos.command.sub;
 
 import br.alkazuz.terrenos.command.SubCommandBase;
+import br.alkazuz.terrenos.inventory.GuiFlagsInventory;
 import br.alkazuz.terrenos.inventory.GuiPermsInventory;
 import br.alkazuz.terrenos.object.PlayerTerreno;
 import br.alkazuz.terrenos.object.PlayerTerrenoManager;
@@ -9,10 +10,10 @@ import br.alkazuz.terrenos.utils.TerrenoManager;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class SubcommandPerms extends SubCommandBase {
+public class SubcommandFlags extends SubCommandBase {
 
-    public SubcommandPerms() {
-        super("perms", "terreno.cmd.perms", "perms <jogador>", "Visualiza as permissões de um jogador.");
+    public SubcommandFlags() {
+        super("flags", "terreno.cmd.flags", "flags", "Atualiza as flags de pvp/interação do terreno.");
     }
 
     @Override
@@ -31,11 +32,7 @@ public class SubcommandPerms extends SubCommandBase {
             return true;
         }
 
-        String target = args[1];
-
-        PlayerTerreno playerTerreno = PlayerTerrenoManager.getPlayerTerreno(target, terreno);
-
-        GuiPermsInventory.openInventory(player, terreno, playerTerreno);
+        GuiFlagsInventory.openInventory(player, terreno);
 
         return true;
     }

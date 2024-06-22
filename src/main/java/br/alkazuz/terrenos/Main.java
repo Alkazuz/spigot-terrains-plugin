@@ -3,11 +3,15 @@ package br.alkazuz.terrenos;
 import br.alkazuz.terrenos.command.CommandTerreno;
 import br.alkazuz.terrenos.command.SubCommands;
 import br.alkazuz.terrenos.config.Settings;
-import br.alkazuz.terrenos.config.inventory.GuiPermsInventory;
+import br.alkazuz.terrenos.inventory.GuiBuyInventory;
+import br.alkazuz.terrenos.inventory.GuiFlagsInventory;
+import br.alkazuz.terrenos.inventory.GuiPermsInventory;
+import br.alkazuz.terrenos.inventory.GuiTerrenosInventory;
 import br.alkazuz.terrenos.listeners.PlayerInTerrainListener;
-import br.alkazuz.terrenos.config.inventory.listen.InventoryClickListenner;
+import br.alkazuz.terrenos.inventory.listen.InventoryClickListenner;
 import br.alkazuz.terrenos.config.manager.ConfigManager;
 import br.alkazuz.terrenos.listeners.LazyLoadingTerrainListener;
+import br.alkazuz.terrenos.listeners.PlayerJoinListener;
 import br.alkazuz.terrenos.listeners.SellRegionListener;
 import br.alkazuz.terrenos.storage.DBCore;
 import br.alkazuz.terrenos.storage.MySQLCore;
@@ -70,6 +74,10 @@ public class Main extends JavaPlugin {
         pm.registerEvents(new SellRegionListener(),  this);
         pm.registerEvents(new LazyLoadingTerrainListener(), this);
         pm.registerEvents(new GuiPermsInventory(), this);
+        pm.registerEvents(new GuiFlagsInventory(), this);
+        pm.registerEvents(new GuiBuyInventory(), this);
+        pm.registerEvents(new GuiTerrenosInventory(), this);
+        pm.registerEvents(new PlayerJoinListener(), this);
 
         getCommand("terreno").setExecutor(new CommandTerreno());
 

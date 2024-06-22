@@ -1,9 +1,6 @@
 package br.alkazuz.terrenos.command;
 
-import br.alkazuz.terrenos.command.sub.SubcommandInfo;
-import br.alkazuz.terrenos.command.sub.SubcommandMenu;
-import br.alkazuz.terrenos.command.sub.SubcommandPerms;
-import br.alkazuz.terrenos.command.sub.SubcommandVender;
+import br.alkazuz.terrenos.command.sub.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +12,7 @@ public class SubCommands {
         registerSubCommand(new SubcommandInfo());
         registerSubCommand(new SubcommandMenu());
         registerSubCommand(new SubcommandPerms());
+        registerSubCommand(new SubcommandFlags());
         registerSubCommand(new SubcommandVender());
     }
 
