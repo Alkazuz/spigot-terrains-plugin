@@ -3,7 +3,8 @@ package br.alkazuz.terrenos;
 import br.alkazuz.terrenos.command.CommandTerreno;
 import br.alkazuz.terrenos.command.SubCommands;
 import br.alkazuz.terrenos.config.Settings;
-import br.alkazuz.terrenos.config.inventory.listen.BlockBreakEvent;
+import br.alkazuz.terrenos.config.inventory.GuiPermsInventory;
+import br.alkazuz.terrenos.listeners.PlayerInTerrainListener;
 import br.alkazuz.terrenos.config.inventory.listen.InventoryClickListenner;
 import br.alkazuz.terrenos.config.manager.ConfigManager;
 import br.alkazuz.terrenos.listeners.LazyLoadingTerrainListener;
@@ -12,9 +13,11 @@ import br.alkazuz.terrenos.storage.DBCore;
 import br.alkazuz.terrenos.storage.MySQLCore;
 import br.alkazuz.terrenos.storage.SQLiteCore;
 import br.alkazuz.terrenos.utils.EventWaiter;
+import br.alkazuz.terrenos.utils.GuiHolder;
 import net.milkbowl.vault.Vault;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerChatEvent;
@@ -42,6 +45,19 @@ public class Main extends JavaPlugin {
         startDatabase();
     }
 
+    @Override
+    public void onDisable() {
+        if (database != null)
+            database.close();
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            if (player.getOpenInventory() != null) {
+                if (player.getOpenInventory().getTopInventory().getHolder() instanceof GuiHolder) {
+                    player.closeInventory();
+                }
+            }
+        }
+    }
+
     public void load() {
         SubCommands.load();
         this.eventWaiter = new EventWaiter(this);
@@ -50,9 +66,10 @@ public class Main extends JavaPlugin {
                 PlayerChatEvent.class);
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new InventoryClickListenner(), this);
-        pm.registerEvents(new BlockBreakEvent(), this);
+        pm.registerEvents(new PlayerInTerrainListener(), this);
         pm.registerEvents(new SellRegionListener(),  this);
         pm.registerEvents(new LazyLoadingTerrainListener(), this);
+        pm.registerEvents(new GuiPermsInventory(), this);
 
         getCommand("terreno").setExecutor(new CommandTerreno());
 

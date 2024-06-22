@@ -1,6 +1,7 @@
 package br.alkazuz.terrenos.object;
 
 import br.alkazuz.terrenos.Main;
+import br.alkazuz.terrenos.perms.EPermissions;
 import br.alkazuz.terrenos.storage.DBCore;
 import org.bukkit.Bukkit;
 
@@ -68,6 +69,24 @@ public class PlayerTerreno {
         return terreno.getOwner().equalsIgnoreCase(player);
     }
 
+    public void togglePermission(EPermissions perm) {
+        switch (perm) {
+            case BUILD:
+                placeBlocks = !placeBlocks;
+                break;
+            case BREAK:
+                breakBlock = !breakBlock;
+                break;
+            case CHEST:
+                openChest = !openChest;
+                break;
+            case COMMANDS:
+                useCommands = !useCommands;
+                break;
+        }
+        save();
+    }
+
     public void save() {
         Bukkit.getScheduler().runTaskAsynchronously(Main.getInstance(), () -> {
             DBCore db = Main.getInstance().getDBCore();
@@ -75,13 +94,13 @@ public class PlayerTerreno {
                     "(`terreno_id`, `player`, `placeblock`, `breakblock`, `usechest`, `usecommand`) VALUES (?, ?, ?, ?, ?, ?);";
             if (id != null) {
                 sql = "UPDATE `core_terrenos_perms` " +
-                        "SET `placeblock` = ?, `breakblock` = ?, `usechest` = ?, `usecommand` = ? WHERE `id` = ?;";
+                        "SET `terreno_id` = ?, `player` = ?, `placeblock` = ?, `breakblock` = ?, `usechest` = ?, `usecommand` = ? WHERE `id` = ?;";
             }
 
             try (PreparedStatement ps = db.prepareStatement(sql, id == null ? PreparedStatement.RETURN_GENERATED_KEYS : PreparedStatement.NO_GENERATED_KEYS)) {
 
                 ps.setInt(1, terreno.getId());
-                ps.setString(2, player);
+                ps.setString(2, player.toLowerCase());
                 ps.setBoolean(3, placeBlocks);
                 ps.setBoolean(4, breakBlock);
                 ps.setBoolean(5, openChest);

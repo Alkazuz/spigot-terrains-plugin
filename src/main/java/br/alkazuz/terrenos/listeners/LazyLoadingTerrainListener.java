@@ -13,6 +13,7 @@ public class LazyLoadingTerrainListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onMove(PlayerMoveEvent event) {
+        if (event.getFrom().getChunk().equals(event.getTo().getChunk())) return;
         Chunk from = event.getFrom().getChunk();
         if (!from.getWorld().getName().equals(Settings.TERRAIN_WORLD)) return;
         TerrenoManager.loadTerrainsInRadius(from, 2);
@@ -20,8 +21,8 @@ public class LazyLoadingTerrainListener implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onTeleport(PlayerTeleportEvent event) {
-        Chunk from = event.getFrom().getChunk();
-        if (!from.getWorld().getName().equals(Settings.TERRAIN_WORLD)) return;
-        TerrenoManager.loadTerrainsInRadius(from, 2);
+        Chunk to = event.getTo().getChunk();
+        if (!to.getWorld().getName().equals(Settings.TERRAIN_WORLD)) return;
+        TerrenoManager.loadTerrainsInRadius(to, 2);
     }
 }

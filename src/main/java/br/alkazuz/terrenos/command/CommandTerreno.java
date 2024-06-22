@@ -1,5 +1,6 @@
 package br.alkazuz.terrenos.command;
 
+import br.alkazuz.terrenos.config.Settings;
 import br.alkazuz.terrenos.config.inventory.GuiInventory;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -17,26 +18,20 @@ public class CommandTerreno implements CommandExecutor {
         }
         Player player = (Player) commandSender;
 
-        if (!player.getLocation().getWorld().getName().equals("region")) {
+        if (!player.getLocation().getWorld().getName().equals(Settings.TERRAIN_WORLD)) {
             player.sendMessage("§cVocê não pode executar este comando neste mundo.");
             return true;
         }
 
         if (strings.length == 0) {
-            GuiInventory.openMain(player);
+            sendHelp(commandSender);
             return true;
         }
 
         SubCommandBase subCommandBase = SubCommands.getSubCommand(strings[0]);
         if (subCommandBase == null) {
-            StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append("§cComando não encontrado.\n");
-            for (SubCommandBase subCommandBase1 : SubCommands.getSubCommands()) {
-                if (player.hasPermission(subCommandBase1.getPermission())) {
-                    stringBuilder.append("§f/terreno ").append(subCommandBase1.getName()).append(" §7- ").append(subCommandBase1.getDescription()).append("\n");
-                }
-            }
-            player.sendMessage(stringBuilder.toString());
+            commandSender.sendMessage("§cComando não encontrado.");
+            sendHelp(commandSender);
             return true;
         }
 
@@ -50,5 +45,19 @@ public class CommandTerreno implements CommandExecutor {
         }
 
         return true;
+    }
+
+    private void sendHelp(CommandSender sender) {
+        StringBuilder stringBuilder = new StringBuilder(
+                "§eTerrenos - Ajuda\n"+
+                "§7Comandos disponíveis:\n"
+        );
+        for (SubCommandBase subCommandBase1 : SubCommands.getSubCommands()) {
+            if (sender.hasPermission(subCommandBase1.getPermission())) {
+                stringBuilder.append("§f/terreno ")
+                        .append(subCommandBase1.getUsage()).append(" §7- ").append(subCommandBase1.getDescription()).append("\n");
+            }
+        }
+        sender.sendMessage(stringBuilder.toString());
     }
 }

@@ -31,10 +31,9 @@ public class TerrenoManager {
         if (alreadyLoadedChunks.contains(computeHash)) {
             return;
         }
-
         DBCore database = main.getDBCore();
 
-        String query = "SELECT * FROM `core_terrenos` WHERE `x1` <= ? AND `x2` >= ? AND `z1` <= ? AND `z2` >= ? AND `world` = ?";
+        String query = "SELECT * FROM `core_terrenos` WHERE `x2` >= ? AND `x1` <= ? AND `z2` >= ? AND `z1` <= ? AND `world` = ?";
 
         PreparedStatement ps = database.prepareStatement(query);
         try {
@@ -43,7 +42,10 @@ public class TerrenoManager {
             ps.setInt(3, chunk.getZ() * 16);
             ps.setInt(4, chunk.getZ() * 16 + 15);
             ps.setString(5, chunk.getWorld().getName());
+
             ResultSet rs = ps.executeQuery();
+            int count = 0;
+
             while (rs.next()) {
                 int id = rs.getInt("id");
                 int x1 = rs.getInt("x1");
@@ -58,11 +60,13 @@ public class TerrenoManager {
                 int computeTerrainHash = Serializer.computeHash(terreno);
 
                 terrenos.put(computeTerrainHash, terreno);
+                count++;
             }
+            Main.debug("Terrenos carregados: " + count);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
-
 
     }
 
@@ -96,17 +100,71 @@ public class TerrenoManager {
     }
 
     public static void loadTerrainsInRadius(Chunk centerChunk, int radius) {
+        World world = centerChunk.getWorld();
+        int loadedCount = 0;
+
+        int minX = Integer.MAX_VALUE;
+        int maxX = Integer.MIN_VALUE;
+        int minZ = Integer.MAX_VALUE;
+        int maxZ = Integer.MIN_VALUE;
+
         for (int dx = -radius; dx <= radius; dx++) {
             for (int dz = -radius; dz <= radius; dz++) {
                 Chunk chunk = centerChunk.getWorld().getChunkAt(centerChunk.getX() + dx, centerChunk.getZ() + dz);
                 int computeHash = Serializer.computeHash(chunk);
+
                 if (!alreadyLoadedChunks.contains(computeHash)) {
-                    loadTerrainsChunks(chunk);
+                    minX = Math.min(minX, chunk.getX() * 16);
+                    maxX = Math.max(maxX, chunk.getX() * 16 + 15);
+                    minZ = Math.min(minZ, chunk.getZ() * 16);
+                    maxZ = Math.max(maxZ, chunk.getZ() * 16 + 15);
                     alreadyLoadedChunks.add(computeHash);
+                } else {
+                    loadedCount++;
                 }
             }
         }
+
+        if (loadedCount == (2 * radius + 1) * (2 * radius + 1)) {
+            return;
+        }
+
+        String query = "SELECT * FROM `core_terrenos` WHERE `x1` <= ? AND `x2` >= ? AND `z1` <= ? AND `z2` >= ? AND `world` = ?";
+        DBCore database = main.getDBCore();
+        try (PreparedStatement ps = database.prepareStatement(query)) {
+            ps.setInt(1, maxX);
+            ps.setInt(2, minX);
+            ps.setInt(3, maxZ);
+            ps.setInt(4, minZ);
+            ps.setString(5, world.getName());
+
+            ResultSet rs = ps.executeQuery();
+            int count = 0;
+
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                int x1 = rs.getInt("x1");
+                int x2 = rs.getInt("x2");
+                int z1 = rs.getInt("z1");
+                int z2 = rs.getInt("z2");
+                String owner = rs.getString("owner");
+                String worldName = rs.getString("world");
+
+                Terreno terreno = new Terreno(id, owner, x1, x2, z1, z2, worldName);
+                int computeTerrainHash = Serializer.computeHash(terreno);
+
+                if (!terrenos.containsKey(computeTerrainHash)) {
+                    terrenos.put(computeTerrainHash, terreno);
+                    count++;
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+
+
 
     public static Terreno getTerrenoInLocation(Location location) {
         for (Terreno terreno : terrenos.values()) {
