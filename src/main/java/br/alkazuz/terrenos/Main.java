@@ -44,6 +44,7 @@ public class Main extends JavaPlugin {
         loadSettings();
         load();
         startDatabase();
+        keepAlive();
     }
 
     @Override
@@ -115,6 +116,17 @@ public class Main extends JavaPlugin {
                     "`key` VARCHAR(20) NOT NULL," +
                     "`value` VARCHAR(255) NOT NULL);");
         }
+
+    }
+
+    private void keepAlive() {
+        Bukkit.getScheduler().runTaskTimerAsynchronously(this, () -> {
+            if (!database.checkConnection() || !database.execute("SELECT 1;")) {
+                if (database.checkConnection())
+                    database.close();
+                startDatabase();
+            }
+        }, 20 * 60, 20 * 60);
     }
 
     public void genSetings() {

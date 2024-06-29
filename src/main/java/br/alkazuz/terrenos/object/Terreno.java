@@ -105,23 +105,26 @@ public class Terreno {
     }
 
     public boolean getFlagBooleanOrDefault(String key, boolean def) {
-        return Boolean.parseBoolean((String) getFlagOrDefault(key, def));
+        return Boolean.parseBoolean(String.valueOf(getFlagOrDefault(key, def)));
     }
 
     public boolean isPvp() {
-        return Boolean.parseBoolean((String) getFlagOrDefault(TerrenoFlags.PVP.getFlag(), TerrenoFlags.PVP.getDefaultValue()));
+        return Boolean.parseBoolean(String.valueOf(getFlagOrDefault(TerrenoFlags.PVP.getFlag(), TerrenoFlags.PVP.getDefaultValue())));
     }
 
     public boolean isPvp24() {
-        return Boolean.parseBoolean((String) getFlagOrDefault(TerrenoFlags.PVP_24H.getFlag(), TerrenoFlags.PVP_24H.getDefaultValue()));
+        return Boolean.parseBoolean
+                (String.valueOf(getFlagOrDefault(TerrenoFlags.PVP_24H.getFlag(), TerrenoFlags.PVP_24H.getDefaultValue())));
     }
 
     public boolean canSetHome() {
-        return Boolean.parseBoolean((String) getFlagOrDefault(TerrenoFlags.SET_HOME.getFlag(), TerrenoFlags.SET_HOME.getDefaultValue()));
+        return Boolean.parseBoolean(
+                String.valueOf(getFlagOrDefault(TerrenoFlags.SET_HOME.getFlag(), TerrenoFlags.SET_HOME.getDefaultValue())));
     }
 
     public boolean canTpAccept() {
-        return Boolean.parseBoolean((String) getFlagOrDefault(TerrenoFlags.TP_ACCEPT.getFlag(), TerrenoFlags.TP_ACCEPT.getDefaultValue()));
+        return Boolean.parseBoolean(
+                String.valueOf(getFlagOrDefault(TerrenoFlags.TP_ACCEPT.getFlag(), TerrenoFlags.TP_ACCEPT.getDefaultValue())));
     }
 
     public HashMap<String, Object> getFlags() {
