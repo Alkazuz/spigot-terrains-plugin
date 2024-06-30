@@ -41,7 +41,7 @@ public class PlayerInTerrainListener implements Listener {
         if (!event.getPlayer().getWorld().getName().equalsIgnoreCase(Settings.TERRAIN_WORLD)) return;
         if (event.isCancelled()) return;
         Terreno terreno = TerrenoManager.getTerrenoInLocation(event.getPlayer().getLocation());
-        if (terreno == null) {
+        if (terreno == null || terreno.deleting) {
             return;
         }
         String msg = event.getMessage().toLowerCase();
@@ -67,10 +67,11 @@ public class PlayerInTerrainListener implements Listener {
         if (!e.getBlock().getWorld().getName().equalsIgnoreCase(Settings.TERRAIN_WORLD)) return;
         if (e.isCancelled()) return;
         Terreno terreno = TerrenoManager.getTerrenoInLocation(e.getBlock().getLocation());
-        if (terreno == null) {
+        if (terreno == null || terreno.deleting) {
             e.setCancelled(true);
             return;
         }
+
         if (terreno.getOwner().equalsIgnoreCase(e.getPlayer().getName())) return;
 
         PlayerTerreno playerTerreno = PlayerTerrenoManager.getPlayerTerrenoOrDefault(e.getPlayer(), terreno);

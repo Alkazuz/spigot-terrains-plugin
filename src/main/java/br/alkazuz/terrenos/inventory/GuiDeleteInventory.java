@@ -56,6 +56,7 @@ public class GuiDeleteInventory implements Listener {
 
         if (event.getSlot() == 11) {
             Terreno terreno = (Terreno) holder.getProperty("terreno");
+            terreno.deleting = true;
             ClearTerrenoWorkload workload = new ClearTerrenoWorkload(terreno, null);
             BukkitTask task = Bukkit.getServer().getScheduler().runTaskTimer(Main.getInstance(), workload, 1L, 1L);
             workload.setTask(task);
