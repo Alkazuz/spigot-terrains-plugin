@@ -1,10 +1,13 @@
 package br.alkazuz.terrenos.inventory.listen;
 
+import br.alkazuz.terrenos.Main;
 import br.alkazuz.terrenos.config.Settings;
 import br.alkazuz.terrenos.inventory.GuiInventory;
 import br.alkazuz.terrenos.inventory.GuiTerrenosInventory;
 import br.alkazuz.terrenos.utils.GuiHolder;
+import br.alkazuz.terrenos.utils.RandomLocationFinder;
 import br.alkazuz.terrenos.utils.TerrenoManager;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -53,27 +56,39 @@ public class InventoryClickListenner implements Listener {
 
                     lastFindEmptyTime = System.currentTimeMillis();
 
-                    Location randomLoc = TerrenoManager.findRandomEmptyRegionLocation(p.getWorld(), size);
-
                     p.closeInventory();
-                    if (randomLoc == null) {
-                        p.sendMessage("§cNão foi possível encontrar um terreno livre.");
-                        return;
-                    }
-                    try {
-                        if (TerrenoManager.createTerreno(p, randomLoc, size)) {
-                            p.sendMessage("§aTerreno criado com sucesso.");
-                        } else {
-                            p.sendMessage("§cNão foi possível criar o terreno.");
-                        }
-                    } catch (Exception ex) {
-                        p.sendMessage("§c" + ex.getMessage());
-                    }
+
+                    p.sendMessage("§eProcurando um terreno livre...");
+
+                    Location randomLoc = RandomLocationFinder.getRandomLocation(size.getSize(), p.getLocation());
+
+                    Bukkit.getScheduler().scheduleSyncDelayedTask(
+                            Main.getInstance(),
+                            () -> {
+                                if (randomLoc == null) {
+                                    p.sendMessage("§cNão foi possível encontrar um terreno livre.");
+                                    return;
+                                }
+                                try {
+                                    if (TerrenoManager.createTerreno(p, randomLoc, size, false)) {
+                                        p.sendMessage("§aTerreno criado com sucesso.");
+                                        p.teleport(randomLoc);
+                                    } else {
+                                        p.sendMessage("§cNão foi possível criar o terreno.");
+                                    }
+                                } catch (Exception ex) {
+                                    p.sendMessage("§c" + ex.getMessage());
+                                }
+
+                                long time = System.currentTimeMillis() - lastFindEmptyTime;
+                                Main.debug("InventoryClickListenner.onClickShopConfirm randomLoc took " + time + "ms");
+                            }
+                    );
                 } else if (e.getSlot() == 2) {
                     Location location = p.getLocation();
                     p.closeInventory();
                     try {
-                        if (TerrenoManager.createTerreno(p, location, size)) {
+                        if (TerrenoManager.createTerreno(p, location, size, true)) {
                             p.sendMessage("§aTerreno criado com sucesso.");
                         } else {
                             p.sendMessage("§cNão foi possível criar o terreno.");

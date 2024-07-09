@@ -22,6 +22,8 @@ dependencies {
     implementation files('D:\\server 1.5.2 - Copia\\plugins\\Legendchat.jar')
     implementation files('D:\\server 1.5.2 - Copia\\plugins\\Vault.jar')
     implementation files('D:\\server 1.5.2 - Copia\\plugins\\mcMMO.jar')
+    implementation files('D:\\server 1.5.2 - Copia\\plugins\\WorldGuard.jar')
+    implementation files('D:\\server 1.5.2 - Copia\\plugins\\worldedit-5.5.4.jar')
     implementation files('D:\\server 1.5.2 - Copia\\plugins\\ProtocolLib-2.4.3.jar')
 }
 

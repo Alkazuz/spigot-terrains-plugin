@@ -20,7 +20,8 @@ import org.bukkit.inventory.ItemStack;
 import java.util.HashMap;
 
 public class GuiPermsInventory implements Listener {
-    private static final int[] SLOTS = new int[] { 10, 11, 12, 13, 14, 15, 16, 28, 29, 30, 31, 32, 33, 34};
+    private static final int[] SLOTS = new int[]{10, 11, 12, 13, 14, 15, 16, 28, 29, 30, 31, 32, 33, 34};
+
     public static void openInventory(Player player, Terreno terreno, PlayerTerreno playerTerreno) {
         HashMap<String, Object> properties = new HashMap<>();
         properties.put("terreno", terreno);
@@ -89,7 +90,6 @@ public class GuiPermsInventory implements Listener {
         if (!(event.getPlayer() instanceof Player)) {
             return;
         }
-
         Inventory inventory = event.getInventory();
         if (inventory.getHolder() instanceof GuiHolder) {
             GuiHolder holder = (GuiHolder) inventory.getHolder();

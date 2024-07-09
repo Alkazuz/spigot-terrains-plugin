@@ -1,5 +1,7 @@
 package br.alkazuz.terrenos;
 
+
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import br.alkazuz.terrenos.command.CommandTerreno;
 import br.alkazuz.terrenos.command.SubCommands;
 import br.alkazuz.terrenos.config.Settings;
@@ -22,6 +24,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerChatEvent;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -29,6 +32,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class Main extends JavaPlugin {
     private static Main instance;
     private EventWaiter eventWaiter;
+    private WorldGuardPlugin worldGuard;
     private Economy econ;
     private DBCore database;
     private Vault vault;
@@ -45,6 +49,12 @@ public class Main extends JavaPlugin {
         load();
         startDatabase();
         keepAlive();
+        Bukkit.getScheduler().scheduleSyncDelayedTask(this, () -> {
+            if (!setupEconomy()) {
+                debug("Vault não encontrado, desabilitando plugin.");
+                getServer().getPluginManager().disablePlugin(this);
+            }
+        });
     }
 
     @Override
@@ -80,7 +90,6 @@ public class Main extends JavaPlugin {
 
         getCommand("terreno").setExecutor(new CommandTerreno());
 
-        setupEconomy();
     }
 
     private void startDatabase() {
@@ -164,6 +173,16 @@ public class Main extends JavaPlugin {
 
     public static void debug(String message) {
         Bukkit.getConsoleSender().sendMessage("§e[Terrenos] " + message);
+    }
+
+    public WorldGuardPlugin getWorldGuard() {
+        if (worldGuard != null)
+            return worldGuard;
+        Plugin plugin = getServer().getPluginManager().getPlugin("WorldGuard");
+        if (plugin == null || !(plugin instanceof WorldGuardPlugin))
+            return null;
+        worldGuard = (WorldGuardPlugin) plugin;
+        return worldGuard;
     }
 
 }

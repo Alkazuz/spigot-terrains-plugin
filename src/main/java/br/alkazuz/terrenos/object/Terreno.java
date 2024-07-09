@@ -134,6 +134,7 @@ public class Terreno {
 
     public void save() {
         Bukkit.getScheduler().runTaskAsynchronously(Main.getInstance(), () -> {
+            long start = System.currentTimeMillis();
             DBCore db = Main.getInstance().getDBCore();
             String sql;
             if (id == null) {
@@ -161,6 +162,9 @@ public class Terreno {
                         }
                     }
                 }
+
+                long end = System.currentTimeMillis() - start;
+                Main.debug("Terreno.save() took " + end + "ms");
             } catch (Exception e) {
                 e.printStackTrace();
             }

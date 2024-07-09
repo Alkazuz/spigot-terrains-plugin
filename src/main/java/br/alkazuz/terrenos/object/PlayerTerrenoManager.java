@@ -11,35 +11,34 @@ import java.util.HashMap;
 import java.util.List;
 
 public class PlayerTerrenoManager {
-    private static final PlayerTerreno DEFAULT_PLAYER = new PlayerTerreno(null);
     private static final HashMap<String, HashMap<Integer, PlayerTerreno>> playerTerrenos = new HashMap<>();
 
     public static PlayerTerreno getPlayerTerrenoOrDefault(Player player, Terreno terreno) {
+        if (terreno == null) {
+            return new PlayerTerreno(player.getName());
+        }
+
         if (!playerTerrenos.containsKey(player.getName().toLowerCase())) {
             playerTerrenos.put(player.getName(), new HashMap<>());
         }
 
         HashMap<Integer, PlayerTerreno> map = playerTerrenos.get(player.getName().toLowerCase());
 
-        if (map.containsKey(terreno.getId())) {
-            return map.get(terreno.getId());
+        if (!map.containsKey(terreno.getId())) {
+            PlayerTerreno playerTerreno = getFromDatabase(player.getName(), terreno);
+
+            if (playerTerreno != null) {
+                map.put(terreno.getId(), playerTerreno);
+                return playerTerreno;
+            }
+
+            map.put(terreno.getId(), new PlayerTerreno(player.getName(), terreno));
         }
 
-        return DEFAULT_PLAYER;
+        return map.get(terreno.getId());
     }
 
-    public static PlayerTerreno getPlayerTerreno(String player, Terreno terreno) {
-        player = player.toLowerCase();
-        if (!playerTerrenos.containsKey(player)) {
-            playerTerrenos.put(player, new HashMap<>());
-        }
-
-        HashMap<Integer, PlayerTerreno> map = playerTerrenos.get(player);
-
-        if (map.containsKey(terreno.getId())) {
-            return map.get(terreno.getId());
-        }
-
+    public static PlayerTerreno getFromDatabase(String player, Terreno terreno) {
         DBCore dbCore = Main.getInstance().getDBCore();
 
         String query = "SELECT * FROM `core_terrenos_perms` WHERE `player` = ? AND `terreno_id` = ?";
@@ -59,17 +58,36 @@ public class PlayerTerrenoManager {
                 playerTerreno.setOpenChest(rs.getBoolean("usechest"));
                 playerTerreno.setUseCommands(rs.getBoolean("usecommand"));
 
-                map.put(terreno.getId(), playerTerreno);
-
                 return playerTerreno;
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        PlayerTerreno playerTerreno = new PlayerTerreno(player);
+        return null;
+    }
+
+    public static PlayerTerreno getPlayerTerreno(String player, Terreno terreno) {
+        player = player.toLowerCase();
+        if (!playerTerrenos.containsKey(player)) {
+            playerTerrenos.put(player, new HashMap<>());
+        }
+
+        HashMap<Integer, PlayerTerreno> map = playerTerrenos.get(player);
+
+        if (map.containsKey(terreno.getId())) {
+            return map.get(terreno.getId());
+        }
+
+        PlayerTerreno playerTerreno = getFromDatabase(player, terreno);
+
+        if (playerTerreno != null) {
+            map.put(terreno.getId(), playerTerreno);
+            return playerTerreno;
+        }
+
+        playerTerreno = new PlayerTerreno(player);
         playerTerreno.setTerreno(terreno);
-        playerTerreno.save();
         map.put(terreno.getId(), playerTerreno);
 
         return playerTerreno;

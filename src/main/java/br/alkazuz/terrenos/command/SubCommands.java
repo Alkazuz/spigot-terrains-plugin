@@ -13,6 +13,7 @@ public class SubCommands {
         registerSubCommand(new SubcommandMenu());
         registerSubCommand(new SubcommandPerms());
         registerSubCommand(new SubcommandFlags());
+        registerSubCommand(new SubcommandComprar());
         registerSubCommand(new SubcommandVender());
         registerSubCommand(new SubcommandDeletar());
     }

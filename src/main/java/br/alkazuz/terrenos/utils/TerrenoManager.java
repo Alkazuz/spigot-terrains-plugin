@@ -5,6 +5,7 @@ import br.alkazuz.terrenos.config.Settings;
 import br.alkazuz.terrenos.object.PlayerTerrenoManager;
 import br.alkazuz.terrenos.object.Terreno;
 import br.alkazuz.terrenos.storage.DBCore;
+import javafx.util.Pair;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.*;
@@ -20,6 +21,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
+
+import com.sk89q.worldedit.BlockVector;
+import com.sk89q.worldguard.domains.DefaultDomain;
+import com.sk89q.worldguard.protection.ApplicableRegionSet;
+import com.sk89q.worldguard.protection.databases.ProtectionDatabaseException;
+import com.sk89q.worldguard.protection.flags.DefaultFlag;
+import com.sk89q.worldguard.protection.flags.StateFlag;
+import com.sk89q.worldguard.protection.managers.RegionManager;
+import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 public class TerrenoManager {
     private static final Main main = Main.getInstance();
@@ -189,6 +200,7 @@ public class TerrenoManager {
             stringBuilder.append("§cVocê não está em um terreno.");
         } else {
             stringBuilder.append("§e\n§e§lInformações do terreno\n");
+            stringBuilder.append("§eID: §f").append(regionInfo.getId()).append("\n");
             stringBuilder.append("§eDono: §f").append(PlayerUtils.getPlayerPrefix(regionInfo.getOwner()) + regionInfo.getOwner()).append("\n");
             stringBuilder.append("§ePvP: §f").append(regionInfo.isPvp() ? "§aLigado" : "§cDesligado").append("\n");
             stringBuilder.append("§ePvP 24 horas: §f").append(regionInfo.isPvp24() ? "§aLigado" : "§cDesligado").append("\n");
@@ -224,46 +236,38 @@ public class TerrenoManager {
     }
 
     public static Location findRandomEmptyRegionLocation(World world, Settings.Size terrainsSize) {
-        int size = terrainsSize.getSize();
+        /*int size = terrainsSize.getSize();
         DBCore database = main.getDBCore();
+        Random random = new Random();
 
-        String extremasQuery = "SELECT MAX(x2) AS maxX, MIN(x1) AS minX, MAX(z2) AS maxZ, MIN(z1) AS minZ FROM `core_terrenos` WHERE `world` = ?";
-        try (PreparedStatement psExtremas = database.prepareStatement(extremasQuery)) {
-            psExtremas.setString(1, world.getName());
-            ResultSet rsExtremas = psExtremas.executeQuery();
+        BoundsCache.Pair<Integer, Integer> xBounds = BoundsCache.getCachedXBounds(world);
+        BoundsCache.Pair<Integer, Integer> zBounds = BoundsCache.getCachedZBounds(world);
 
-            if (rsExtremas.next()) {
-                int maxX = rsExtremas.getInt("maxX");
-                int minX = rsExtremas.getInt("minX");
-                int maxZ = rsExtremas.getInt("maxZ");
-                int minZ = rsExtremas.getInt("minZ");
+        for (int attempts = 0; attempts < 10; attempts++) {
+            int x = random.nextInt(xBounds.getRight() - xBounds.getLeft() + size) + xBounds.getLeft() - size;
+            int z = random.nextInt(zBounds.getRight() - zBounds.getLeft() + size) + zBounds.getLeft() - size;
 
-                String checkQuery = "SELECT COUNT(*) FROM `core_terrenos` WHERE `world` = ? AND NOT (`x2` <= ? OR `x1` >= ? OR `z2` <= ? OR `z1` >= ?)";
-                Random random = new Random();
 
-                for (int attempts = 0; attempts < 1000; attempts++) {
-                    int x = random.nextInt(maxX - minX + size) + minX - size;
-                    int z = random.nextInt(maxZ - minZ + size) + minZ - size;
 
-                    try (PreparedStatement psCheck = database.prepareStatement(checkQuery)) {
-                        psCheck.setString(1, world.getName());
-                        psCheck.setInt(2, x);
-                        psCheck.setInt(3, x + size);
-                        psCheck.setInt(4, z);
-                        psCheck.setInt(5, z + size);
-                        ResultSet rsCheck = psCheck.executeQuery();
+            try (PreparedStatement psCheck = database.prepareStatement(checkQuery)) {
+                psCheck.setString(1, world.getName());
+                psCheck.setInt(2, x);
+                psCheck.setInt(3, x + size);
+                psCheck.setInt(4, z);
+                psCheck.setInt(5, z + size);
+                ResultSet rsCheck = psCheck.executeQuery();
 
-                        if (rsCheck.next() && rsCheck.getInt(1) == 0) {
-                            return new Location(world, x, world.getHighestBlockYAt(x, z), z);
-                        }
-                    }
+                if (rsCheck.next() && rsCheck.getInt(1) == 0
+                        && !TerrenoManager.hasNearWorldGuardRegion(new Location(world, x, world.getHighestBlockYAt(x, z), z), size)) {
+                    return new Location(world, x, 5, z);
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        }*/
         return null;
     }
+
 
     public static boolean hasNearReagion(Location location, int radius) {
         int x = location.getBlockX();
@@ -281,9 +285,33 @@ public class TerrenoManager {
         return false;
     }
 
-    public static boolean createTerreno(Player p, Location randomLoc, Settings.Size size) throws Exception {
+    public static boolean hasNearWorldGuardRegion(Location location, int radius) {
+        RegionManager regionManager = main.getWorldGuard().getRegionManager(location.getWorld());
+        int x = location.getBlockX();
+        int z = location.getBlockZ();
+        int y = location.getBlockY();
+        for (int i = x - radius; i < x + radius + 5; i++) {
+            for (int j = z - radius; j < z + radius + 5; j++) {
+                for (int k = y - radius; k < y + radius + 5; k++) {
+                    if (regionManager.getApplicableRegions(location.getWorld().getBlockAt(i, k, j).getLocation()).size() > 0) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public static boolean createTerreno(Player p, Location randomLoc, Settings.Size size, boolean loadChunks) throws Exception {
         Chunk chunk = randomLoc.getChunk();
-        loadTerrainsInRadius(chunk, 12);
+        if (loadChunks) {
+            loadTerrainsInRadius(chunk, 12);
+        }
+
+        if (hasNearWorldGuardRegion(randomLoc, size.getSize())) {
+            throw new IllegalArgumentException("§cVocê não pode criar um terreno neste local.");
+        }
+
         if (hasNearReagion(randomLoc, size.getSize())) {
             throw new IllegalArgumentException("§cVocê não pode criar um terreno perto de outro.");
         }
@@ -291,7 +319,7 @@ public class TerrenoManager {
         Economy economy = main.getEconomy();
         int price = p.hasPermission("terrenos.vip") ? size.getVipPrice() : size.getPrice();
 
-        if (!economy.has(p.getName(), price)) {
+        if (economy.getBalance(p.getName()) < price) {
             throw new IllegalArgumentException("§cVocê não tem dinheiro suficiente para comprar o terreno.");
         }
 

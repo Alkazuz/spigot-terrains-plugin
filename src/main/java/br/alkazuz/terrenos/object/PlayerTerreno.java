@@ -21,6 +21,11 @@ public class PlayerTerreno {
         this.player = player;
     }
 
+    public PlayerTerreno(String player, Terreno terreno) {
+        this.player = player;
+        this.terreno = terreno;
+    }
+
     public String getPlayer() {
         return player;
     }
@@ -84,11 +89,11 @@ public class PlayerTerreno {
                 useCommands = !useCommands;
                 break;
         }
-        save();
     }
 
     public void save() {
         Bukkit.getScheduler().runTaskAsynchronously(Main.getInstance(), () -> {
+            long start = System.currentTimeMillis();
             DBCore db = Main.getInstance().getDBCore();
             String sql = "INSERT INTO `core_terrenos_perms` " +
                     "(`terreno_id`, `player`, `placeblock`, `breakblock`, `usechest`, `usecommand`) VALUES (?, ?, ?, ?, ?, ?);";
@@ -118,6 +123,8 @@ public class PlayerTerreno {
                         }
                     }
                 }
+                long end = System.currentTimeMillis() - start;
+                Main.debug("PlayerTerreno.save() took " + end + "ms");
             } catch (Exception e) {
                 e.printStackTrace();
 
