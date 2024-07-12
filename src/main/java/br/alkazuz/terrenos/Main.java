@@ -1,22 +1,19 @@
 package br.alkazuz.terrenos;
 
 
-import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import br.alkazuz.terrenos.command.CommandTerreno;
 import br.alkazuz.terrenos.command.SubCommands;
 import br.alkazuz.terrenos.config.Settings;
-import br.alkazuz.terrenos.inventory.*;
-import br.alkazuz.terrenos.listeners.PlayerInTerrainListener;
-import br.alkazuz.terrenos.inventory.listen.InventoryClickListenner;
 import br.alkazuz.terrenos.config.manager.ConfigManager;
-import br.alkazuz.terrenos.listeners.LazyLoadingTerrainListener;
-import br.alkazuz.terrenos.listeners.PlayerJoinListener;
-import br.alkazuz.terrenos.listeners.SellRegionListener;
+import br.alkazuz.terrenos.inventory.*;
+import br.alkazuz.terrenos.inventory.listen.InventoryClickListenner;
+import br.alkazuz.terrenos.listeners.*;
 import br.alkazuz.terrenos.storage.DBCore;
 import br.alkazuz.terrenos.storage.MySQLCore;
 import br.alkazuz.terrenos.storage.SQLiteCore;
 import br.alkazuz.terrenos.utils.EventWaiter;
 import br.alkazuz.terrenos.utils.GuiHolder;
+import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
 import net.milkbowl.vault.Vault;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
@@ -79,7 +76,7 @@ public class Main extends JavaPlugin {
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new InventoryClickListenner(), this);
         pm.registerEvents(new PlayerInTerrainListener(), this);
-        pm.registerEvents(new SellRegionListener(),  this);
+        pm.registerEvents(new SellRegionListener(), this);
         pm.registerEvents(new LazyLoadingTerrainListener(), this);
         pm.registerEvents(new GuiPermsInventory(), this);
         pm.registerEvents(new GuiFlagsInventory(), this);
@@ -87,6 +84,7 @@ public class Main extends JavaPlugin {
         pm.registerEvents(new GuiTerrenosInventory(), this);
         pm.registerEvents(new GuiDeleteInventory(), this);
         pm.registerEvents(new PlayerJoinListener(), this);
+        pm.registerEvents(new TerrenoSpawnerListener(), this);
 
         getCommand("terreno").setExecutor(new CommandTerreno());
 
@@ -153,13 +151,13 @@ public class Main extends JavaPlugin {
     private boolean setupEconomy() {
         RegisteredServiceProvider<Economy> economyProvider = getServer().getServicesManager().getRegistration(Economy.class);
         if (economyProvider != null)
-            econ = (Economy)economyProvider.getProvider();
+            econ = (Economy) economyProvider.getProvider();
         return (econ != null);
     }
 
     public Vault getVault() {
         if (vault == null)
-            vault = (Vault)getServer().getPluginManager().getPlugin("Vault");
+            vault = (Vault) getServer().getPluginManager().getPlugin("Vault");
         return vault;
     }
 

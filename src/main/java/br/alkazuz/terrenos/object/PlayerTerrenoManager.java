@@ -19,7 +19,7 @@ public class PlayerTerrenoManager {
         }
 
         if (!playerTerrenos.containsKey(player.getName().toLowerCase())) {
-            playerTerrenos.put(player.getName(), new HashMap<>());
+            playerTerrenos.put(player.getName().toLowerCase(), new HashMap<>());
         }
 
         HashMap<Integer, PlayerTerreno> map = playerTerrenos.get(player.getName().toLowerCase());

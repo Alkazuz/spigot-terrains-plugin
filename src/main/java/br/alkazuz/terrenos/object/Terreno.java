@@ -239,4 +239,19 @@ public class Terreno {
             }
         });
     }
+
+    @Override
+    public String toString() {
+        return "Terreno{" +
+                "id=" + id +
+                ", owner='" + owner + '\'' +
+                ", x1=" + x1 +
+                ", x2=" + x2 +
+                ", z1=" + z1 +
+                ", z2=" + z2 +
+                ", world='" + world + '\'' +
+                ", flags=" + flags +
+                ", deleting=" + deleting +
+                '}';
+    }
 }
