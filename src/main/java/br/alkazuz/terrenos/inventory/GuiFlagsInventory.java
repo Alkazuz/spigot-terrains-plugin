@@ -2,14 +2,11 @@ package br.alkazuz.terrenos.inventory;
 
 import br.alkazuz.terrenos.Main;
 import br.alkazuz.terrenos.TerrenoFlags;
-import br.alkazuz.terrenos.object.PlayerTerreno;
-import br.alkazuz.terrenos.object.PlayerTerrenoManager;
+import br.alkazuz.terrenos.economy.DepositBank;
 import br.alkazuz.terrenos.object.Terreno;
-import br.alkazuz.terrenos.perms.EPermissions;
 import br.alkazuz.terrenos.utils.GuiHolder;
 import br.alkazuz.terrenos.utils.ItemBuilder;
 import br.alkazuz.terrenos.utils.NumberFormatUtil;
-import com.sun.org.apache.xpath.internal.operations.Number;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -20,11 +17,11 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import java.text.NumberFormat;
 import java.util.HashMap;
 
 public class GuiFlagsInventory implements Listener {
-    private static final int[] SLOTS = new int[] { 10, 11, 12, 13, 14, 15, 16, 28, 29, 30, 31, 32, 33, 34};
+    private static final int[] SLOTS = new int[]{10, 11, 12, 13, 14, 15, 16, 28, 29, 30, 31, 32, 33, 34};
+
     public static void openInventory(Player player, Terreno terreno) {
         HashMap<String, Object> properties = new HashMap<>();
         properties.put("terreno", terreno);
@@ -41,7 +38,7 @@ public class GuiFlagsInventory implements Listener {
 
         int index = 0;
         for (TerrenoFlags flag : TerrenoFlags.values()) {
-             ItemBuilder item = new ItemBuilder(flag.getIcon());
+            ItemBuilder item = new ItemBuilder(flag.getIcon());
             item.setName("§a" + flag.getName());
             item.addLore("", "§7" + flag.getDescription());
 
@@ -96,6 +93,7 @@ public class GuiFlagsInventory implements Listener {
                             boolean value = terreno.getFlagBooleanOrDefault(terrenoFlags.getFlag(), terrenoFlags.getDefaultValue());
                             terreno.setFlag(terrenoFlags.getFlag(), !value);
                             updateInventorySlots(inventory, terreno);
+                            DepositBank.depositBank(price);
                         } else {
                             pl.sendMessage("§cOcorreu um erro ao tentar ativar/desativar essa flag.");
                         }
