@@ -1,7 +1,10 @@
 package br.alkazuz.terrenos.workload.workloads;
 
+import net.minecraft.server.v1_5_R3.WorldServer;
+import org.bukkit.Chunk;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.craftbukkit.v1_5_R3.CraftWorld;
 
 public class PlaceBlock implements WorkLoad {
     private World world;
@@ -18,15 +21,12 @@ public class PlaceBlock implements WorkLoad {
 
     @Override
     public void compute() {
-        if (blockY == 0) {
-            world.getBlockAt(blockX, blockY, blockZ).setType(Material.BEDROCK);
-        } else if (blockY < 3) {
-            world.getBlockAt(blockX, blockY, blockZ).setType(Material.DIRT);
-        } else if (blockY == 3) {
-            world.getBlockAt(blockX, blockY, blockZ).setType(Material.GRASS);
-        } else {
-            world.getBlockAt(blockX, blockY, blockZ).setType(material);
+        Chunk chunk = world.getChunkAt(blockX, blockZ);
+        if (!chunk.isLoaded()) {
+            chunk.load();
         }
+        WorldServer worldServer = ((CraftWorld) this.world).getHandle();
+        worldServer.setTypeId(blockX, blockY, blockZ, material.getId());
     }
 
 }

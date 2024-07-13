@@ -34,7 +34,19 @@ public class ClearTerrenoWorkload implements Runnable {
             for (int y = initial.getBlockY(); y <= end.getBlockY(); y++) {
                 for (int z = initial.getBlockZ(); z <= end.getBlockZ(); z++) {
                     Location location = new Location(Bukkit.getWorld(terreno.getWorld()), x, y, z);
-                    workloads.add(new PlaceBlock(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ(), Material.AIR));
+                    Material material = null;
+                    if (y == 0) {
+                        material = Material.BEDROCK;
+                    } else if (y < 3) {
+                        material = Material.DIRT;
+                    } else if (y == 3) {
+                        material = Material.GRASS;
+                    } else {
+                        material = Material.AIR;
+                    }
+                    workloads.add(
+                            new PlaceBlock(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ(),
+                                    material));
                 }
             }
         }

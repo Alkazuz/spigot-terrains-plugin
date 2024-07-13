@@ -21,7 +21,7 @@ public class RandomLocationFinder {
 
         Location location = null;
 
-        playerLocation = new Location(playerLocation.getWorld(), 200, 5, 200);
+        playerLocation = new Location(playerLocation.getWorld(), 600, 5, 600);
 
         for (int i = step; i <= maxExtent; i += step) {
             x = i;
@@ -90,7 +90,6 @@ public class RandomLocationFinder {
         }
         return occupiedRegions;
     }
-
 
 
     public static class Region {

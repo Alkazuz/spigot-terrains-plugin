@@ -5,13 +5,14 @@ import br.alkazuz.terrenos.config.Settings;
 import br.alkazuz.terrenos.object.PlayerTerrenoManager;
 import br.alkazuz.terrenos.object.Terreno;
 import br.alkazuz.terrenos.storage.DBCore;
-import javafx.util.Pair;
+import br.alkazuz.terrenos.workload.FenceTerrenoWorkload;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -19,18 +20,7 @@ import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 import java.util.stream.Collectors;
-
-import com.sk89q.worldedit.BlockVector;
-import com.sk89q.worldguard.domains.DefaultDomain;
-import com.sk89q.worldguard.protection.ApplicableRegionSet;
-import com.sk89q.worldguard.protection.databases.ProtectionDatabaseException;
-import com.sk89q.worldguard.protection.flags.DefaultFlag;
-import com.sk89q.worldguard.protection.flags.StateFlag;
-import com.sk89q.worldguard.protection.managers.RegionManager;
-import com.sk89q.worldguard.protection.regions.ProtectedCuboidRegion;
-import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 public class TerrenoManager {
     private static final Main main = Main.getInstance();
@@ -146,7 +136,6 @@ public class TerrenoManager {
     }
 
 
-
     public static Terreno getTerrenoInLocation(Location location) {
         for (Terreno terreno : terrenos.values()) {
             if (terreno.isOnTerrain(location)) {
@@ -227,7 +216,7 @@ public class TerrenoManager {
         }
         Block block = location.getWorld().getBlockAt(location);
         block.setType(Material.SIGN_POST);
-        Sign sig = (Sign)block.getState();
+        Sign sig = (Sign) block.getState();
         sig.setLine(0, "§e[COMPRAR]");
         sig.setLine(1, region.getOwner());
         sig.setLine(2, NumberFormat.getInstance().format(price));
@@ -286,33 +275,29 @@ public class TerrenoManager {
     }
 
     public static boolean hasNearWorldGuardRegion(Location location, int radius) {
-        RegionManager regionManager = main.getWorldGuard().getRegionManager(location.getWorld());
-        int x = location.getBlockX();
-        int z = location.getBlockZ();
-        int y = location.getBlockY();
-        for (int i = x - radius; i < x + radius + 5; i++) {
-            for (int j = z - radius; j < z + radius + 5; j++) {
-                for (int k = y - radius; k < y + radius + 5; k++) {
-                    if (regionManager.getApplicableRegions(location.getWorld().getBlockAt(i, k, j).getLocation()).size() > 0) {
-                        return true;
-                    }
-                }
-            }
+        Location spawn = new Location(location.getWorld(), 0, 0, 0);
+
+        if (location.distance(spawn) < 300) {
+            return true;
         }
+
         return false;
     }
 
     public static boolean createTerreno(Player p, Location randomLoc, Settings.Size size, boolean loadChunks) throws Exception {
         Chunk chunk = randomLoc.getChunk();
-        if (loadChunks) {
-            loadTerrainsInRadius(chunk, 12);
-        }
 
+        if (loadChunks) {
+            loadTerrainsInRadius(chunk, 5);
+
+        }
         if (hasNearWorldGuardRegion(randomLoc, size.getSize())) {
-            throw new IllegalArgumentException("§cVocê não pode criar um terreno neste local.");
+
+            throw new IllegalArgumentException("§cVocê não pode criar um terreno neste local, afaste-se de regiões protegidas.");
         }
 
         if (hasNearReagion(randomLoc, size.getSize())) {
+
             throw new IllegalArgumentException("§cVocê não pode criar um terreno perto de outro.");
         }
 
@@ -323,7 +308,7 @@ public class TerrenoManager {
             throw new IllegalArgumentException("§cVocê não tem dinheiro suficiente para comprar o terreno.");
         }
 
-        if(economy.withdrawPlayer(p.getName(), price).type != EconomyResponse.ResponseType.SUCCESS) {
+        if (economy.withdrawPlayer(p.getName(), price).type != EconomyResponse.ResponseType.SUCCESS) {
             throw new Exception("§cOcorreu um erro ao retirar o dinheiro da sua conta.");
         }
 
@@ -335,7 +320,7 @@ public class TerrenoManager {
         Terreno terreno = new Terreno(null, p.getName(), x1, x2, z1, z2, randomLoc.getWorld().getName());
         terreno.save();
 
-        makeBorderFance(randomLoc, size);
+
         if (size.isMobSpawn()) {
             Location center = new Location(randomLoc.getWorld(), randomLoc.getX(), randomLoc.getBlockY() + 5, randomLoc.getY());
             center.getWorld().getBlockAt(center).setType(Material.MOB_SPAWNER);
@@ -343,21 +328,17 @@ public class TerrenoManager {
 
         terrenos.put(Serializer.computeHash(terreno), terreno);
 
+        Bukkit.getScheduler().runTaskLater(main, () -> {
+            makeBorderFence(randomLoc, size);
+        }, 20 * 2);
+
         return true;
     }
 
-    private static void makeBorderFance(Location location, Settings.Size size) {
-        int x = location.getBlockX();
-        int z = location.getBlockZ();
-        int y = 4;
-        World world = location.getWorld();
-        for (int i = x - (size.getSize() / 2); i < x + (size.getSize() / 2); i++) {
-            for (int j = z - (size.getSize() / 2); j < z + (size.getSize() / 2); j++) {
-                if (i != x - (size.getSize() / 2) && i != x + (size.getSize() / 2) - 1 && j != z - (size.getSize() / 2) && j != z + (size.getSize() / 2) - 1) continue;
-                world.getBlockAt(i, y, j).setType(Material.FENCE);
-                world.getBlockAt(i, y + 1, j).setType(Material.AIR);
-            }
-        }
+    private static void makeBorderFence(Location location, Settings.Size size) {
+        FenceTerrenoWorkload workload = new FenceTerrenoWorkload(location, size, null);
+        BukkitTask task = Bukkit.getServer().getScheduler().runTaskTimer(Main.getInstance(), workload, 1L, 1L);
+        workload.setTask(task);
     }
 
     public static void buyRegion(Player player, Terreno region, double price) {
