@@ -8,9 +8,11 @@ import br.alkazuz.terrenos.storage.DBCore;
 import br.alkazuz.terrenos.workload.FenceTerrenoWorkload;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
+import net.minecraft.server.v1_5_R3.WorldServer;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+import org.bukkit.craftbukkit.v1_5_R3.CraftWorld;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -324,6 +326,8 @@ public class TerrenoManager {
         if (size.isMobSpawn()) {
             Location center = new Location(randomLoc.getWorld(), randomLoc.getX(), randomLoc.getBlockY() + 5, randomLoc.getY());
             center.getWorld().getBlockAt(center).setType(Material.MOB_SPAWNER);
+            WorldServer worldServer = ((CraftWorld) center.getWorld()).getHandle();
+            worldServer.setTypeId(center.getBlockX(), center.getBlockY(), center.getBlockZ(), 52);
         }
 
         terrenos.put(Serializer.computeHash(terreno), terreno);

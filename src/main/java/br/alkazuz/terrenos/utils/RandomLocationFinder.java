@@ -14,7 +14,20 @@ public class RandomLocationFinder {
     public static Location getRandomLocation(int size, Location playerLocation) {
         List<br.alkazuz.terrenos.utils.RandomLocationFinder.Region> occupiedRegions = loadOccupiedRegions();
 
-        int maxExtent = 5000;
+        int maxTries = 10;
+
+        for (int i = 0; i < maxTries; i++) {
+            Location location = new Location(playerLocation.getWorld(),
+                    playerLocation.getX() + (Math.random() * 10000), 5,
+                    playerLocation.getZ() + (Math.random() * 10000));
+            if (!isRegionOccupied(location, size, occupiedRegions)) {
+                return location;
+            }
+        }
+
+        return null;
+
+        /*int maxExtent = 5000;
         int step = 10;
 
         int x = 0, z = 0;
@@ -56,11 +69,11 @@ public class RandomLocationFinder {
             }
         }
 
-        return location;
+        return location;*/
     }
 
     private static boolean isRegionOccupied(Location location, int size, List<br.alkazuz.terrenos.utils.RandomLocationFinder.Region> occupiedRegions) {
-        int safetyMargin = 6;
+        int safetyMargin = 5;
         int minX = location.getBlockX() - safetyMargin;
         int maxX = location.getBlockX() + size + safetyMargin;
         int minZ = location.getBlockZ() - safetyMargin;

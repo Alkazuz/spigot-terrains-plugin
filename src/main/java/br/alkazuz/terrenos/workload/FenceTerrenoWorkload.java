@@ -12,7 +12,7 @@ import java.util.Deque;
 
 public class FenceTerrenoWorkload implements Runnable {
 
-    private static final double MAX_MILLIS_PER_TICK = 3.0;
+    private static final double MAX_MILLIS_PER_TICK = 0.04;
     private static final double MAX_NANOS_PER_TICK = MAX_MILLIS_PER_TICK * 1E6;
 
     private final Deque<WorkLoad> workloads = new ArrayDeque<>();

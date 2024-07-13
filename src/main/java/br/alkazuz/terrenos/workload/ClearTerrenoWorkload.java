@@ -16,7 +16,7 @@ import java.util.Deque;
 
 public class ClearTerrenoWorkload implements Runnable {
 
-    private static final double MAX_MILLIS_PER_TICK = 3.0;
+    private static final double MAX_MILLIS_PER_TICK = 0.1;
     private static final double MAX_NANOS_PER_TICK = MAX_MILLIS_PER_TICK * 1E6;
 
     private final Deque<WorkLoad> workloads = new ArrayDeque<>();
@@ -34,7 +34,12 @@ public class ClearTerrenoWorkload implements Runnable {
             for (int y = initial.getBlockY(); y <= end.getBlockY(); y++) {
                 for (int z = initial.getBlockZ(); z <= end.getBlockZ(); z++) {
                     Location location = new Location(Bukkit.getWorld(terreno.getWorld()), x, y, z);
-                    Material material = null;
+
+                    int currentBlock = location.getWorld().getBlockTypeIdAt(location);
+                    if (currentBlock == 0) {
+                        continue;
+                    }
+                    Material material;
                     if (y == 0) {
                         material = Material.BEDROCK;
                     } else if (y < 3) {
@@ -44,6 +49,7 @@ public class ClearTerrenoWorkload implements Runnable {
                     } else {
                         material = Material.AIR;
                     }
+
                     workloads.add(
                             new PlaceBlock(location.getWorld(), location.getBlockX(), location.getBlockY(), location.getBlockZ(),
                                     material));
@@ -57,7 +63,9 @@ public class ClearTerrenoWorkload implements Runnable {
         long start = System.nanoTime();
         while (!workloads.isEmpty() && System.nanoTime() - start < MAX_NANOS_PER_TICK) {
             WorkLoad workLoad = workloads.poll();
-            assert workLoad != null;
+            if (workLoad == null) {
+                continue;
+            }
             workLoad.compute();
         }
 
