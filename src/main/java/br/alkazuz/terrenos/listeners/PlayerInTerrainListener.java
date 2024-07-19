@@ -105,6 +105,7 @@ public class PlayerInTerrainListener implements Listener {
         if (event.getPlayer().hasPermission("terrenos.admin")) return;
         if (event.getClickedBlock() == null) return;
         if (!event.getClickedBlock().getWorld().getName().equalsIgnoreCase(Settings.TERRAIN_WORLD)) return;
+        if (event.getClickedBlock().getType().toString().contains("SIGN")) return;
         if (event.isCancelled()) return;
         Terreno terreno = TerrenoManager.getTerrenoInLocation(event.getClickedBlock().getLocation());
         if (terreno == null) {
