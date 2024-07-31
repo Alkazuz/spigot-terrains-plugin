@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
@@ -78,6 +79,20 @@ public class PlayerInTerrainListener implements Listener {
 
         if (!playerTerreno.canPlaceBlocks()) {
             e.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onBlockFlow(BlockFromToEvent event) {
+        if (!event.getBlock().getWorld().getName().equalsIgnoreCase(Settings.TERRAIN_WORLD)) return;
+        Terreno terreno = TerrenoManager.getTerrenoInLocation(event.getBlock().getLocation());
+        if (terreno == null) {
+            event.setCancelled(true);
+            return;
+        }
+        boolean outSide = terreno.isOutSide(event.getToBlock().getLocation());
+        if (outSide) {
+            event.setCancelled(true);
         }
     }
 

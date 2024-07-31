@@ -28,50 +28,6 @@ public class TerrenoManager {
     private static final HashSet<Integer> alreadyLoadedChunks = new HashSet<>();
     private static final HashMap<Integer, Terreno> terrenos = new HashMap<>();
 
-    public static void loadTerrainsChunks(Chunk chunk) {
-        int computeHash = Serializer.computeHash(chunk);
-        if (alreadyLoadedChunks.contains(computeHash)) {
-            return;
-        }
-        DBCore database = main.getDBCore();
-
-        String query = "SELECT * FROM `core_terrenos` WHERE `x2` >= ? AND `x1` <= ? AND `z2` >= ? AND `z1` <= ? AND `world` = ?";
-
-        PreparedStatement ps = database.prepareStatement(query);
-        try {
-            ps.setInt(1, chunk.getX() * 16);
-            ps.setInt(2, chunk.getX() * 16 + 15);
-            ps.setInt(3, chunk.getZ() * 16);
-            ps.setInt(4, chunk.getZ() * 16 + 15);
-            ps.setString(5, chunk.getWorld().getName());
-
-            ResultSet rs = ps.executeQuery();
-            int count = 0;
-
-            while (rs.next()) {
-                int id = rs.getInt("id");
-                int x1 = rs.getInt("x1");
-                int x2 = rs.getInt("x2");
-                int z1 = rs.getInt("z1");
-                int z2 = rs.getInt("z2");
-                String owner = rs.getString("owner");
-                String world = rs.getString("world");
-
-                Terreno terreno = new Terreno(id, owner, x1, x2, z1, z2, world);
-
-                int computeTerrainHash = Serializer.computeHash(terreno);
-
-                terrenos.put(computeTerrainHash, terreno);
-                count++;
-            }
-            Main.debug("Terrenos carregados: " + count);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
-
     public static void loadTerrainsInRadius(Chunk centerChunk, int radius) {
         World world = centerChunk.getWorld();
         int loadedCount = 0;
@@ -124,6 +80,7 @@ public class TerrenoManager {
 
                 Terreno terreno = new Terreno(id, owner, x1, x2, z1, z2, worldName);
                 terreno.loadFlags();
+                terreno.loadSpawns();
                 int computeTerrainHash = Serializer.computeHash(terreno);
 
                 if (!terrenos.containsKey(computeTerrainHash)) {
@@ -165,6 +122,7 @@ public class TerrenoManager {
 
                     Terreno terreno = new Terreno(id, owner, x1, x2, z1, z2, world);
                     terreno.loadFlags();
+                    terreno.loadSpawns();
                     int computeTerrainHash = Serializer.computeHash(terreno);
                     if (!terrenos.containsKey(computeTerrainHash)) {
                         terrenos.put(computeTerrainHash, terreno);
@@ -316,9 +274,9 @@ public class TerrenoManager {
         DepositBank.depositBank(price);
 
         int x1 = randomLoc.getBlockX() - size.getSize() / 2;
-        int x2 = randomLoc.getBlockX() + size.getSize() / 2;
+        int x2 = randomLoc.getBlockX() + size.getSize() / 2 - 1;
         int z1 = randomLoc.getBlockZ() - size.getSize() / 2;
-        int z2 = randomLoc.getBlockZ() + size.getSize() / 2;
+        int z2 = randomLoc.getBlockZ() + size.getSize() / 2 - 1;
 
         Terreno terreno = new Terreno(null, p.getName(), x1, x2, z1, z2, randomLoc.getWorld().getName());
         terreno.save();

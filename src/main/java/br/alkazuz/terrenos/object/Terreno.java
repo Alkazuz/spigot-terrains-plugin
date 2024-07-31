@@ -5,10 +5,16 @@ import br.alkazuz.terrenos.TerrenoFlags;
 import br.alkazuz.terrenos.storage.DBCore;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.entity.EntityType;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class Terreno {
     private Integer id;
@@ -16,6 +22,7 @@ public class Terreno {
     private int x1, x2, z1, z2;
     private final String world;
     private final HashMap<String, Object> flags = new HashMap<>();
+    private final HashMap<EntityType, Location> spawns = new HashMap<>();
     public boolean deleting = false;
 
     public Terreno(Integer id, String owner, int x1, int x2, int z1, int z2, String world) {
@@ -128,9 +135,30 @@ public class Terreno {
                 String.valueOf(getFlagOrDefault(TerrenoFlags.TP_ACCEPT.getFlag(), TerrenoFlags.TP_ACCEPT.getDefaultValue())));
     }
 
+    public HashMap<EntityType, Location> getSpawns() {
+        return spawns;
+    }
+
     public HashMap<String, Object> getFlags() {
         return this.flags;
     }
+
+    private void deleteSpawnsIfNotEntry() {
+        List<EntityType> allSpawns = new ArrayList<>(spawns.keySet());
+        String placeholders = allSpawns.stream().map(spawn -> "?").collect(Collectors.joining(", "));
+        String sql = "DELETE FROM `core_terrenos_spawns` WHERE `terreno_id` = ? AND `entity` NOT IN (" + placeholders + ");";
+
+        try (PreparedStatement ps = Main.getInstance().getDBCore().prepareStatement(sql)) {
+            ps.setInt(1, id);
+            for (int i = 0; i < allSpawns.size(); i++) {
+                ps.setString(i + 2, allSpawns.get(i).toString());
+            }
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public void save() {
         Bukkit.getScheduler().runTaskAsynchronously(Main.getInstance(), () -> {
@@ -141,6 +169,25 @@ public class Terreno {
                 sql = "INSERT INTO `core_terrenos` (`owner`, `x1`, `x2`, `z1`, `z2`, `world`) VALUES (?, ?, ?, ?, ?, ?);";
             } else {
                 sql = "UPDATE `core_terrenos` SET `owner` = ?, `x1` = ?, `x2` = ?, `z1` = ?, `z2` = ?, `world` = ? WHERE `id` = ?;";
+            }
+
+            deleteSpawnsIfNotEntry();
+
+            for (Map.Entry<EntityType, Location> entry : spawns.entrySet()) {
+                EntityType entity = entry.getKey();
+                Location location = entry.getValue();
+                try (PreparedStatement ps = db.prepareStatement(
+                        "INSERT INTO `core_terrenos_spawns` (`terreno_id`, `x`, `y`, `z`, `world`, `entity`) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `x` = VALUES(`x`), `y` = VALUES(`y`), `z` = VALUES(`z`), `world` = VALUES(`world`);")) {
+                    ps.setInt(1, id);
+                    ps.setDouble(2, location.getX());
+                    ps.setDouble(3, location.getY());
+                    ps.setDouble(4, location.getZ());
+                    ps.setString(5, location.getWorld().getName());
+                    ps.setString(6, entity.toString());
+                    ps.executeUpdate();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
 
             try (PreparedStatement ps = db.prepareStatement(sql, id == null ? PreparedStatement.RETURN_GENERATED_KEYS : PreparedStatement.NO_GENERATED_KEYS)) {
@@ -165,6 +212,29 @@ public class Terreno {
 
                 long end = System.currentTimeMillis() - start;
                 Main.debug("Terreno.save() took " + end + "ms");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    public void loadSpawns() {
+        Bukkit.getScheduler().runTaskAsynchronously(Main.getInstance(), () -> {
+            DBCore db = Main.getInstance().getDBCore();
+            String sql = "SELECT `entity`, `x`, `y`, `z`, `world` FROM `core_terrenos_spawns` WHERE `terreno_id` = ?;";
+
+            try (PreparedStatement ps = db.prepareStatement(sql)) {
+                ps.setInt(1, id);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        EntityType entity = EntityType.valueOf(rs.getString("entity"));
+                        int x = rs.getInt("x");
+                        int y = rs.getInt("y");
+                        int z = rs.getInt("z");
+                        String world = rs.getString("world");
+                        spawns.put(entity, new Location(Bukkit.getWorld(world), x, y, z));
+                    }
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -216,6 +286,10 @@ public class Terreno {
         return new Location(Bukkit.getWorld(world), (x1 + x2) / 2, 10, (z1 + z2) / 2);
     }
 
+    public boolean isOutSide(Location location) {
+        return location.getBlockX() < x1 || location.getBlockX() > x2 || location.getBlockZ() < z1 || location.getBlockZ() > z2;
+    }
+
     public void delete() {
         Bukkit.getScheduler().runTaskAsynchronously(Main.getInstance(), () -> {
             DBCore db = Main.getInstance().getDBCore();
@@ -231,6 +305,11 @@ public class Terreno {
                 }
 
                 try (PreparedStatement ps = db.prepareStatement("DELETE FROM `core_terrenos_perms` WHERE `terreno_id` = ?;")) {
+                    ps.setInt(1, id);
+                    ps.executeUpdate();
+                }
+
+                try (PreparedStatement ps = db.prepareStatement("DELETE FROM `core_terrenos_spawns` WHERE `terreno_id` = ?;")) {
                     ps.setInt(1, id);
                     ps.executeUpdate();
                 }
@@ -254,4 +333,6 @@ public class Terreno {
                 ", deleting=" + deleting +
                 '}';
     }
+
+
 }

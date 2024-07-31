@@ -122,6 +122,17 @@ public class Main extends JavaPlugin {
                     "`terreno_id` INT NOT NULL," +
                     "`key` VARCHAR(20) NOT NULL," +
                     "`value` VARCHAR(255) NOT NULL);");
+            database.execute("CREATE TABLE IF NOT EXISTS `core_terrenos_spawns` (" +
+                    "`id` INT NOT NULL AUTO_INCREMENT," +
+                    "`terreno_id` INT NOT NULL," +
+                    "`x` DOUBLE NOT NULL," +
+                    "`y` DOUBLE NOT NULL," +
+                    "`z` DOUBLE NOT NULL," +
+                    "`world` VARCHAR(255) NOT NULL," +
+                    "`entity` VARCHAR(255) NOT NULL," +
+                    "PRIMARY KEY (`id`)," +
+                    "UNIQUE (`terreno_id`, `entity`)," +
+                    "FOREIGN KEY (`terreno_id`) REFERENCES `core_terrenos` (`id`) ON DELETE CASCADE);");
         }
 
     }

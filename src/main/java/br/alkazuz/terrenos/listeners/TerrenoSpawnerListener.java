@@ -2,6 +2,7 @@ package br.alkazuz.terrenos.listeners;
 
 import br.alkazuz.terrenos.object.Terreno;
 import br.alkazuz.terrenos.utils.TerrenoManager;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -12,6 +13,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 
@@ -20,6 +23,7 @@ import java.util.List;
 
 public class TerrenoSpawnerListener implements Listener {
     private HashMap<String, Long> cooldown = new HashMap<>();
+    private HashMap<String, Long> cooldownPlaceSpawners = new HashMap<>();
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onUseEgg2(PlayerInteractEvent e) {
@@ -29,6 +33,36 @@ public class TerrenoSpawnerListener implements Listener {
         e.setCancelled(true);
     }
 
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onPlaceMobSpawner(BlockPlaceEvent e) {
+        if (!e.getPlayer().getWorld().getName().equals("region")) return;
+        if (e.getBlock().getType() != Material.MOB_SPAWNER) return;
+        if (cooldownPlaceSpawners.containsKey(e.getPlayer().getName()) && cooldownPlaceSpawners.get(e.getPlayer().getName()) > System.currentTimeMillis()) {
+            e.setCancelled(true);
+            e.getPlayer().sendMessage("§cAguarde um pouco para fazer isso novamente!");
+            return;
+        }
+        cooldownPlaceSpawners.put(e.getPlayer().getName(), System.currentTimeMillis() + 1000);
+    }
+
+    @EventHandler(priority = EventPriority.LOW)
+    public void onSpawn(CreatureSpawnEvent e) {
+        if (!e.getLocation().getWorld().getName().equals("region")) return;
+        CreatureSpawnEvent.SpawnReason reason = e.getSpawnReason();
+        if (reason != CreatureSpawnEvent.SpawnReason.SPAWNER) return;
+
+        Terreno terreno = TerrenoManager.getTerrenoInLocation(e.getLocation());
+        if (terreno == null) {
+            return;
+        }
+
+        EntityType entityType = e.getEntityType();
+        if (!terreno.getSpawns().containsKey(entityType)) return;
+
+        Location location = terreno.getSpawns().get(entityType);
+
+        e.getEntity().teleport(location);
+    }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onUseEgg(PlayerInteractEvent e) {

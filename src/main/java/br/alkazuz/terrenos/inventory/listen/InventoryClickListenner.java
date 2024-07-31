@@ -4,12 +4,16 @@ import br.alkazuz.terrenos.Main;
 import br.alkazuz.terrenos.config.Settings;
 import br.alkazuz.terrenos.inventory.GuiInventory;
 import br.alkazuz.terrenos.inventory.GuiTerrenosInventory;
+import br.alkazuz.terrenos.object.Terreno;
+import br.alkazuz.terrenos.utils.EntityName;
 import br.alkazuz.terrenos.utils.GuiHolder;
 import br.alkazuz.terrenos.utils.RandomLocationFinder;
 import br.alkazuz.terrenos.utils.TerrenoManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -38,6 +42,7 @@ public class InventoryClickListenner implements Listener {
     }
 
     private Long lastFindEmptyTime = 0L;
+
     @EventHandler
     public void onClickShopConfirm(final InventoryClickEvent e) {
         if (e.getInventory().getHolder() instanceof GuiHolder) {
@@ -45,7 +50,7 @@ public class InventoryClickListenner implements Listener {
             GuiHolder holder = (GuiHolder) e.getInventory().getHolder();
             int guiID = holder.getId();
             if (guiID == 9247) {
-                Settings.Size size = Settings.SIZES.stream().filter(s -> (int)holder.getProperty("size") == s.getSize()).findFirst().orElse(null);
+                Settings.Size size = Settings.SIZES.stream().filter(s -> (int) holder.getProperty("size") == s.getSize()).findFirst().orElse(null);
                 e.setCancelled(true);
                 if (size == null) return;
                 if (e.getSlot() == 6) {
@@ -117,6 +122,40 @@ public class InventoryClickListenner implements Listener {
                 } else if (e.getSlot() == 5) {
                     GuiTerrenosInventory.open(p);
                 }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onClickInventorySetSpawn(final InventoryClickEvent e) {
+        if (e.getInventory().getHolder() instanceof GuiHolder) {
+            Player p = (Player) e.getWhoClicked();
+            GuiHolder holder = (GuiHolder) e.getInventory().getHolder();
+            int guiID = holder.getId();
+            if (guiID == 9250) {
+                e.setCancelled(true);
+
+                Terreno terreno = (Terreno) holder.getProperty("terreno");
+
+                if (e.getCurrentItem() == null) return;
+                if (e.getCurrentItem().getItemMeta() == null) return;
+
+                if (e.getCurrentItem().getType() != Material.MONSTER_EGG) return;
+
+                EntityType entityType = EntityType.fromId(e.getCurrentItem().getDurability());
+                if (entityType == null) return;
+
+                if (terreno.getSpawns().containsKey(entityType)) {
+                    terreno.getSpawns().remove(entityType);
+                    p.sendMessage("§aSpawn removido com sucesso.");
+                } else {
+                    terreno.getSpawns().put(entityType, p.getLocation());
+                    terreno.save();
+
+                    p.sendMessage("§aSpawn de " + EntityName.valueOf(entityType).getName() + " definido com sucesso.");
+                }
+
+                GuiInventory.updateSpawnSet(e.getInventory(), terreno);
             }
         }
     }
