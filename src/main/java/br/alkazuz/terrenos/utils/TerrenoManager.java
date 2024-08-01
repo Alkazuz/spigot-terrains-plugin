@@ -93,6 +93,9 @@ public class TerrenoManager {
         }
     }
 
+    public static List<Terreno> getTerrenosInChunk(Chunk chunk) {
+        return terrenos.values().stream().filter(terreno -> terreno.isInChunk(chunk)).collect(Collectors.toList());
+    }
 
     public static Terreno getTerrenoInLocation(Location location) {
         for (Terreno terreno : terrenos.values()) {

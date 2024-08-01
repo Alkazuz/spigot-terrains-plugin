@@ -4,6 +4,7 @@ import br.alkazuz.terrenos.Main;
 import br.alkazuz.terrenos.TerrenoFlags;
 import br.alkazuz.terrenos.storage.DBCore;
 import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.entity.EntityType;
 
@@ -341,4 +342,7 @@ public class Terreno {
     }
 
 
+    public boolean isInChunk(Chunk chunk) {
+        return chunk.getX() >= x1 >> 4 && chunk.getX() <= x2 >> 4 && chunk.getZ() >= z1 >> 4 && chunk.getZ() <= z2 >> 4;
+    }
 }

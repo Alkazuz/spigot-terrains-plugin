@@ -73,6 +73,7 @@ public class ClearTerrenoWorkload implements Runnable {
             finished = true;
             if (task != null) {
                 terreno.delete();
+                terreno.deleting = false;
                 TerrenoManager.removeTerreno(terreno);
                 PlayerTerrenoManager.removeTerreno(terreno);
                 task.cancel();

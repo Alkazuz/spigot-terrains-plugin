@@ -85,6 +85,7 @@ public class Main extends JavaPlugin {
         pm.registerEvents(new GuiDeleteInventory(), this);
         pm.registerEvents(new PlayerJoinListener(), this);
         pm.registerEvents(new TerrenoSpawnerListener(), this);
+        pm.registerEvents(new ChunkUnloadListener(), this);
 
         getCommand("terreno").setExecutor(new CommandTerreno());
 
