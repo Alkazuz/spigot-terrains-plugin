@@ -144,6 +144,9 @@ public class Terreno {
     }
 
     private void deleteSpawnsIfNotEntry() {
+        if (id == null) {
+            return;
+        }
         List<EntityType> allSpawns = new ArrayList<>(spawns.keySet());
         String placeholders = allSpawns.stream().map(spawn -> "?").collect(Collectors.joining(", "));
         String sql = "DELETE FROM `core_terrenos_spawns` WHERE `terreno_id` = ? AND `entity` NOT IN (" + placeholders + ");";
@@ -202,11 +205,14 @@ public class Terreno {
                 }
 
                 int affectedRows = ps.executeUpdate();
+                System.out.println("Terreno.save() affectedRows: " + affectedRows);
                 if (id == null && affectedRows > 0) {
                     try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                         if (generatedKeys.next()) {
                             id = generatedKeys.getInt(1);
                         }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
 

@@ -279,7 +279,6 @@ public class TerrenoManager {
         int z2 = randomLoc.getBlockZ() + size.getSize() / 2 - 1;
 
         Terreno terreno = new Terreno(null, p.getName(), x1, x2, z1, z2, randomLoc.getWorld().getName());
-        terreno.save();
 
         if (size.isMobSpawn()) {
             Location center = new Location(randomLoc.getWorld(), randomLoc.getX(), 8, randomLoc.getZ());
@@ -290,7 +289,9 @@ public class TerrenoManager {
 
         Bukkit.getScheduler().runTaskLater(main, () -> {
             makeBorderFence(randomLoc, size);
-        }, 20 * 2);
+        }, 5L);
+
+        terreno.save();
 
         return true;
     }
