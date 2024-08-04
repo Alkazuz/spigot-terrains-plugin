@@ -61,16 +61,33 @@ public class TerrenoSpawnerListener implements Listener {
 
         Location location = terreno.getSpawns().get(entityType);
 
-        e.getEntity().teleport(location);
+        e.getEntity().teleport(location.clone().add(0.5, 0.5, 0.5));
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler
+    public void onSpawnNatural(CreatureSpawnEvent event) {
+        if (!event.getLocation().getWorld().getName().equals("region")) return;
+        if (event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.SPAWNER ||
+                event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.SPAWNER_EGG) return;
+        event.setCancelled(true);
+        event.getEntity().remove();
+    }
+
+    @EventHandler
     public void onUseEgg(PlayerInteractEvent e) {
+        if (e.getPlayer().getGameMode() == org.bukkit.GameMode.CREATIVE) return;
+        ItemStack item = e.getPlayer().getItemInHand();
+        if (item == null || item.getType() != Material.MONSTER_EGG) return;
+        if (e.getClickedBlock() == null) {
+            e.setCancelled(true);
+            return;
+        }
+        if (e.getClickedBlock().getType() != Material.MOB_SPAWNER) {
+            e.setCancelled(true);
+            return;
+        }
+
         if (!e.getPlayer().getWorld().getName().equals("region")) return;
-        if (e.getItem() == null || e.getItem().getType() != Material.MONSTER_EGG) return;
-        if (e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
-        if (e.getClickedBlock() == null) return;
-        if (e.getClickedBlock().getType() != Material.MOB_SPAWNER) return;
 
         if (cooldown.containsKey(e.getPlayer().getName()) && cooldown.get(e.getPlayer().getName()) > System.currentTimeMillis()) {
             e.setCancelled(true);
@@ -97,8 +114,6 @@ public class TerrenoSpawnerListener implements Listener {
             e.getPlayer().sendMessage("§cVocê só pode colocar spawners em cima do bloco!");
             return;
         }
-
-        ItemStack item = e.getItem();
 
         EntityType entityType = EntityType.fromId(item.getDurability());
 

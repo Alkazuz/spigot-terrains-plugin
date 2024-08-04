@@ -20,6 +20,15 @@ public class PlaceBlock implements WorkLoad {
 
     @Override
     public void compute() {
+        int y = blockY;
+        if (y == 0) {
+            material = Material.BEDROCK;
+        } else if (y < 3) {
+            material = Material.DIRT;
+        } else if (y == 3) {
+            material = Material.GRASS;
+        }
+
         WorldServer worldServer = ((CraftWorld) this.world).getHandle();
         worldServer.setTypeId(blockX, blockY, blockZ, material.getId());
     }
