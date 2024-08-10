@@ -1,12 +1,12 @@
 main: br.alkazuz.terrenos.Main
 name: Terrenos
-version: 1.0
+version: 1.1
 description: Plugin de terrenos
 softdepend:
-    - WorldEdit
-    - WorldGuard
-    - Vault
-    - ProtocolLib
+  - WorldEdit
+  - WorldGuard
+  - Vault
+  - ProtocolLib
 commands:
-    terreno:
-        description: Todos os comandos do plugin
+  terreno:
+    description: Todos os comandos do plugin
