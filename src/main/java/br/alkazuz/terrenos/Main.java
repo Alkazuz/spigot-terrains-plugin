@@ -8,9 +8,11 @@ import br.alkazuz.terrenos.config.manager.ConfigManager;
 import br.alkazuz.terrenos.inventory.*;
 import br.alkazuz.terrenos.inventory.listen.InventoryClickListenner;
 import br.alkazuz.terrenos.listeners.*;
+import br.alkazuz.terrenos.object.Terreno;
 import br.alkazuz.terrenos.storage.DBCore;
 import br.alkazuz.terrenos.storage.MySQLCore;
 import br.alkazuz.terrenos.storage.SQLiteCore;
+import br.alkazuz.terrenos.task.TerrainStorageTask;
 import br.alkazuz.terrenos.utils.EventWaiter;
 import br.alkazuz.terrenos.utils.GuiHolder;
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
@@ -52,10 +54,14 @@ public class Main extends JavaPlugin {
                 getServer().getPluginManager().disablePlugin(this);
             }
         });
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new TerrainStorageTask(), 20 * 60 * 5, 20 * 60 * 5);
     }
 
     @Override
     public void onDisable() {
+        for (Terreno terreno : TerrainStorageTask.getToSave()) {
+            terreno.saveStorageSQL();
+        }
         if (database != null)
             database.close();
         for (Player player : Bukkit.getOnlinePlayers()) {
@@ -81,11 +87,13 @@ public class Main extends JavaPlugin {
         pm.registerEvents(new GuiPermsInventory(), this);
         pm.registerEvents(new GuiFlagsInventory(), this);
         pm.registerEvents(new GuiBuyInventory(), this);
+        pm.registerEvents(new GuiStorageInventory(), this);
         pm.registerEvents(new GuiTerrenosInventory(), this);
         pm.registerEvents(new GuiDeleteInventory(), this);
         pm.registerEvents(new PlayerJoinListener(), this);
         pm.registerEvents(new TerrenoSpawnerListener(), this);
         pm.registerEvents(new ChunkUnloadListener(), this);
+        pm.registerEvents(new ItemSpawnTerrainListener(), this);
 
         getCommand("terreno").setExecutor(new CommandTerreno());
 
@@ -134,6 +142,10 @@ public class Main extends JavaPlugin {
                     "PRIMARY KEY (`id`)," +
                     "UNIQUE (`terreno_id`, `entity`)," +
                     "FOREIGN KEY (`terreno_id`) REFERENCES `core_terrenos` (`id`) ON DELETE CASCADE);");
+            database.execute("CREATE TABLE IF NOT EXISTS `core_terrenos_storage` (" +
+                    "`terreno_id` INT NOT NULL," +
+                    "`material` VARCHAR(255) NOT NULL," +
+                    "`amount` INT NOT NULL);");
         }
 
     }

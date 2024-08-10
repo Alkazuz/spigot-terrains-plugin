@@ -81,6 +81,7 @@ public class TerrenoManager {
                 Terreno terreno = new Terreno(id, owner, x1, x2, z1, z2, worldName);
                 terreno.loadFlags();
                 terreno.loadSpawns();
+                terreno.loadStorage();
                 int computeTerrainHash = Serializer.computeHash(terreno);
 
                 if (!terrenos.containsKey(computeTerrainHash)) {
@@ -126,6 +127,7 @@ public class TerrenoManager {
                     Terreno terreno = new Terreno(id, owner, x1, x2, z1, z2, world);
                     terreno.loadFlags();
                     terreno.loadSpawns();
+                    terreno.loadStorage();
                     int computeTerrainHash = Serializer.computeHash(terreno);
                     if (!terrenos.containsKey(computeTerrainHash)) {
                         terrenos.put(computeTerrainHash, terreno);

@@ -3,9 +3,11 @@ package br.alkazuz.terrenos.object;
 import br.alkazuz.terrenos.Main;
 import br.alkazuz.terrenos.TerrenoFlags;
 import br.alkazuz.terrenos.storage.DBCore;
+import br.alkazuz.terrenos.task.TerrainStorageTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 
 import java.sql.PreparedStatement;
@@ -24,6 +26,7 @@ public class Terreno {
     private final String world;
     private final HashMap<String, Object> flags = new HashMap<>();
     private final HashMap<EntityType, Location> spawns = new HashMap<>();
+    private final HashMap<Material, Integer> storage = new HashMap<>();
     public boolean deleting = false;
 
     public Terreno(Integer id, String owner, int x1, int x2, int z1, int z2, String world) {
@@ -144,6 +147,14 @@ public class Terreno {
         return this.flags;
     }
 
+    public HashMap<Material, Integer> getStorage() {
+        return storage;
+    }
+
+    public void addStorage(Material material, int amount) {
+        storage.put(material, storage.getOrDefault(material, 0) + amount);
+    }
+
     private void deleteSpawnsIfNotEntry() {
         if (id == null) {
             return;
@@ -163,6 +174,28 @@ public class Terreno {
         }
     }
 
+    public void queueSaveStorage() {
+        TerrainStorageTask.save(this);
+    }
+
+    public void saveStorageSQL() {
+        DBCore db = Main.getInstance().getDBCore();
+        String sql = "INSERT INTO `core_terrenos_storage` (`terreno_id`, `material`, `amount`) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE `amount` = VALUES(`amount`);";
+
+        try (PreparedStatement ps = db.prepareStatement(sql)) {
+            for (Material material : storage.keySet()) {
+                int amount = storage.get(material);
+                ps.setInt(1, id);
+                ps.setString(2, material.toString());
+                ps.setInt(3, amount);
+                ps.addBatch();
+            }
+
+            ps.executeBatch();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public void save() {
         Bukkit.getScheduler().runTaskAsynchronously(Main.getInstance(), () -> {
@@ -206,7 +239,6 @@ public class Terreno {
                 }
 
                 int affectedRows = ps.executeUpdate();
-                System.out.println("Terreno.save() affectedRows: " + affectedRows);
                 if (id == null && affectedRows > 0) {
                     try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                         if (generatedKeys.next()) {
@@ -219,6 +251,26 @@ public class Terreno {
 
                 long end = System.currentTimeMillis() - start;
                 Main.debug("Terreno.save() took " + end + "ms");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    public void loadStorage() {
+        Bukkit.getScheduler().runTaskAsynchronously(Main.getInstance(), () -> {
+            DBCore db = Main.getInstance().getDBCore();
+            String sql = "SELECT `material`, `amount` FROM `core_terrenos_storage` WHERE `terreno_id` = ?;";
+
+            try (PreparedStatement ps = db.prepareStatement(sql)) {
+                ps.setInt(1, id);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        Material material = Material.valueOf(rs.getString("material"));
+                        int amount = rs.getInt("amount");
+                        storage.put(material, amount);
+                    }
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
