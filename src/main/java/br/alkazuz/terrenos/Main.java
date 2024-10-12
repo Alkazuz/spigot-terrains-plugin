@@ -142,10 +142,12 @@ public class Main extends JavaPlugin {
                     "PRIMARY KEY (`id`)," +
                     "UNIQUE (`terreno_id`, `entity`)," +
                     "FOREIGN KEY (`terreno_id`) REFERENCES `core_terrenos` (`id`) ON DELETE CASCADE);");
-            database.execute("CREATE TABLE IF NOT EXISTS `core_terrenos_storage` (" +
-                    "`terreno_id` INT NOT NULL," +
-                    "`material` VARCHAR(255) NOT NULL," +
-                    "`amount` INT NOT NULL);");
+            database.execute("CREATE TABLE IF NOT EXISTS core_terrenos_storage (" +
+                    "    terreno_id INT NOT NULL," +
+                    "    material VARCHAR(255) NOT NULL," +
+                    "    amount INT NOT NULL," +
+                    "    PRIMARY KEY (terreno_id, material)" +
+                    ");");
         }
 
     }

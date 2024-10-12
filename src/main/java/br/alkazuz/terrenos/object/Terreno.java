@@ -397,4 +397,8 @@ public class Terreno {
     public boolean isInChunk(Chunk chunk) {
         return chunk.getX() >= x1 >> 4 && chunk.getX() <= x2 >> 4 && chunk.getZ() >= z1 >> 4 && chunk.getZ() <= z2 >> 4;
     }
+
+    public void removeStorage(Material material, Integer integer) {
+        storage.put(material, storage.getOrDefault(material, 0) - integer);
+    }
 }

@@ -1,9 +1,11 @@
 package br.alkazuz.terrenos.config;
 
 import br.alkazuz.terrenos.config.manager.ConfigManager;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class Settings {
@@ -16,10 +18,12 @@ public class Settings {
     public static String MYSQL_USER;
     public static String MYSQL_PASSWORD;
     public static String TERRAIN_WORLD;
+    public static HashMap<Material, Double> MATERIAL_PRICES = new HashMap<>();
     public static int MAX_REGIONS;
     public static int MAX_VIP_REGIONS;
     public static int PVP_PRICE;
     public static int FALL_DAMAGE_PRICE;
+
     public static void load() {
         try {
             FileConfiguration config = ConfigManager.getConfig("settings");
@@ -41,7 +45,14 @@ public class Settings {
             PVP_PRICE = config.getInt("Prices.PVP");
             FALL_DAMAGE_PRICE = config.getInt("Prices.FallDamage");
             DEFAULT_WORLD = config.getString("DefaultWorld");
-        } catch (Exception e){
+            if (config.contains("Prices")) {
+                for (String key : config.getConfigurationSection("Prices").getKeys(false)) {
+                    Material material = Material.getMaterial(key);
+                    double price = config.getDouble("Prices." + key);
+                    MATERIAL_PRICES.put(material, price);
+                }
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

@@ -15,6 +15,8 @@ public class SubCommands {
         registerSubCommand(new SubcommandFlags());
         registerSubCommand(new SubcommandComprar());
         registerSubCommand(new SubcommandSetspawn());
+        registerSubCommand(new SubcommandArmazem());
+        registerSubCommand(new SubcommandReload());
         registerSubCommand(new SubcommandVender());
         registerSubCommand(new SubcommandDeletar());
     }
