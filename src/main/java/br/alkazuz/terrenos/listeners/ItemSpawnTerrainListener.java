@@ -1,6 +1,7 @@
 package br.alkazuz.terrenos.listeners;
 
 import br.alkazuz.terrenos.Main;
+import br.alkazuz.terrenos.config.Settings;
 import br.alkazuz.terrenos.object.Terreno;
 import br.alkazuz.terrenos.utils.TerrenoManager;
 import org.bukkit.Material;
@@ -20,7 +21,7 @@ public class ItemSpawnTerrainListener implements Listener {
 
     @EventHandler
     public void onItemSpawn(ItemSpawnEvent e) {
-        if (!e.getLocation().getWorld().getName().equalsIgnoreCase("region")) return;
+        if (!e.getLocation().getWorld().getName().equalsIgnoreCase(Settings.TERRAIN_WORLD)) return;
         Terreno terreno = TerrenoManager.getTerrenoInLocation(e.getLocation());
         if (terreno == null) {
             return;
@@ -42,7 +43,7 @@ public class ItemSpawnTerrainListener implements Listener {
 
     @EventHandler
     public void playerDropItem(PlayerDropItemEvent e) {
-        if (!e.getPlayer().getWorld().getName().equalsIgnoreCase("region")) return;
+        if (!e.getPlayer().getWorld().getName().equalsIgnoreCase(Settings.TERRAIN_WORLD)) return;
         Terreno terreno = TerrenoManager.getTerrenoInLocation(e.getPlayer().getLocation());
         if (terreno == null) return;
 

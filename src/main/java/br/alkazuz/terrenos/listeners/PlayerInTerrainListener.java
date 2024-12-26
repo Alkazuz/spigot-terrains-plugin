@@ -5,14 +5,13 @@ import br.alkazuz.terrenos.object.PlayerTerreno;
 import br.alkazuz.terrenos.object.PlayerTerrenoManager;
 import br.alkazuz.terrenos.object.Terreno;
 import br.alkazuz.terrenos.utils.TerrenoManager;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockFromToEvent;
-import org.bukkit.event.entity.EntityChangeBlockEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.event.entity.*;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
@@ -33,6 +32,47 @@ public class PlayerInTerrainListener implements Listener {
         PlayerTerreno playerTerreno = PlayerTerrenoManager.getPlayerTerrenoOrDefault(e.getPlayer(), terreno);
         if (!playerTerreno.canBreakBlock()) {
             e.setCancelled(true);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onProjectLaunch(ProjectileLaunchEvent e) {
+        if (!e.getEntity().getWorld().getName().equalsIgnoreCase(Settings.TERRAIN_WORLD)) return;
+        if (e.getEntityType() == EntityType.SMALL_FIREBALL && e
+                .getEntity().getShooter() != null)
+            e.setCancelled(true);
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onUsePotion(PotionSplashEvent event) {
+        if (event.getEntity().getWorld().getName().equals(Settings.TERRAIN_WORLD))
+            event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void entityDamageByEntityHookByEntity(EntityDamageByEntityEvent event) {
+        if (event.getDamager() instanceof org.bukkit.craftbukkit.v1_5_R3.entity.CraftFish) {
+            event.setCancelled(true);
+        } else if (event.getDamager().getWorld().getName().equals(Settings.TERRAIN_WORLD) &&
+                event.getDamager() instanceof org.bukkit.entity.Arrow) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onInteract(PlayerInteractEvent event) {
+        if (event.getPlayer().hasPermission("terrenos.admin")) return;
+        if (!event.getPlayer().getWorld().getName().equalsIgnoreCase(Settings.TERRAIN_WORLD)) return;
+        if (event.isCancelled()) return;
+        Terreno terreno = TerrenoManager.getTerrenoInLocation(event.getPlayer().getLocation());
+        if (terreno == null || terreno.deleting) {
+            return;
+        }
+        if (terreno.getOwner().equalsIgnoreCase(event.getPlayer().getName())) return;
+
+        PlayerTerreno playerTerreno = PlayerTerrenoManager.getPlayerTerrenoOrDefault(event.getPlayer(), terreno);
+        if (!playerTerreno.canBreakBlock()) {
+            event.setCancelled(true);
         }
     }
 

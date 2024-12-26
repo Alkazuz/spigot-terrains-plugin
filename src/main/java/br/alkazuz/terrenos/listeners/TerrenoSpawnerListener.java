@@ -1,5 +1,6 @@
 package br.alkazuz.terrenos.listeners;
 
+import br.alkazuz.terrenos.config.Settings;
 import br.alkazuz.terrenos.object.Terreno;
 import br.alkazuz.terrenos.utils.TerrenoManager;
 import org.bukkit.Location;
@@ -27,7 +28,7 @@ public class TerrenoSpawnerListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onUseEgg2(PlayerInteractEvent e) {
-        if (e.getPlayer().getWorld().getName().equals("region")) return;
+        if (e.getPlayer().getWorld().getName().equals(Settings.TERRAIN_WORLD)) return;
         if (e.getItem() == null || e.getItem().getType() != Material.MONSTER_EGG) return;
         if (e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
         e.setCancelled(true);
@@ -35,7 +36,7 @@ public class TerrenoSpawnerListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onPlaceMobSpawner(BlockPlaceEvent e) {
-        if (!e.getPlayer().getWorld().getName().equals("region")) return;
+        if (!e.getPlayer().getWorld().getName().equals(Settings.TERRAIN_WORLD)) return;
         if (e.getBlock().getType() != Material.MOB_SPAWNER) return;
         if (cooldownPlaceSpawners.containsKey(e.getPlayer().getName()) && cooldownPlaceSpawners.get(e.getPlayer().getName()) > System.currentTimeMillis()) {
             e.setCancelled(true);
@@ -47,7 +48,7 @@ public class TerrenoSpawnerListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOW)
     public void onSpawn(CreatureSpawnEvent e) {
-        if (!e.getLocation().getWorld().getName().equals("region")) return;
+        if (!e.getLocation().getWorld().getName().equals(Settings.TERRAIN_WORLD)) return;
         CreatureSpawnEvent.SpawnReason reason = e.getSpawnReason();
         if (reason != CreatureSpawnEvent.SpawnReason.SPAWNER) return;
 
@@ -66,7 +67,7 @@ public class TerrenoSpawnerListener implements Listener {
 
     @EventHandler
     public void onSpawnNatural(CreatureSpawnEvent event) {
-        if (!event.getLocation().getWorld().getName().equals("region")) return;
+        if (!event.getLocation().getWorld().getName().equals(Settings.TERRAIN_WORLD)) return;
         if (event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.SPAWNER ||
                 event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.SPAWNER_EGG) return;
         event.setCancelled(true);
@@ -87,7 +88,7 @@ public class TerrenoSpawnerListener implements Listener {
             return;
         }
 
-        if (!e.getPlayer().getWorld().getName().equals("region")) return;
+        if (!e.getPlayer().getWorld().getName().equals(Settings.TERRAIN_WORLD)) return;
 
         if (cooldown.containsKey(e.getPlayer().getName()) && cooldown.get(e.getPlayer().getName()) > System.currentTimeMillis()) {
             e.setCancelled(true);

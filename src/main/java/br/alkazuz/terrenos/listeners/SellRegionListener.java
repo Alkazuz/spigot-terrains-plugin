@@ -1,6 +1,7 @@
 package br.alkazuz.terrenos.listeners;
 
 import br.alkazuz.terrenos.Main;
+import br.alkazuz.terrenos.config.Settings;
 import br.alkazuz.terrenos.inventory.GuiBuyInventory;
 import br.alkazuz.terrenos.object.Terreno;
 import br.alkazuz.terrenos.utils.TerrenoManager;
@@ -17,7 +18,7 @@ public class SellRegionListener implements org.bukkit.event.Listener {
     @EventHandler(ignoreCancelled = false, priority = org.bukkit.event.EventPriority.HIGHEST)
     public void onBreakSignSell(BlockBreakEvent e) {
         Player player = e.getPlayer();
-        if (!player.getWorld().getName().equals("region")) {
+        if (!player.getWorld().getName().equals(Settings.TERRAIN_WORLD)) {
             return;
         }
         if (e.getBlock().getType() != org.bukkit.Material.WALL_SIGN && e.getBlock().getType() != org.bukkit.Material.SIGN_POST) {
@@ -42,7 +43,7 @@ public class SellRegionListener implements org.bukkit.event.Listener {
     @EventHandler(priority = org.bukkit.event.EventPriority.HIGHEST)
     public void onRightClickBlockInteract(PlayerInteractEvent e) {
         Player player = e.getPlayer();
-        if (!player.getWorld().getName().equals("region")) {
+        if (!player.getWorld().getName().equals(Settings.TERRAIN_WORLD)) {
             return;
         }
         if (e.getClickedBlock() == null) {
