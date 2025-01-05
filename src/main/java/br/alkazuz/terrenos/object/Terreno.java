@@ -197,63 +197,67 @@ public class Terreno {
         }
     }
 
-    public void save() {
-        Bukkit.getScheduler().runTaskAsynchronously(Main.getInstance(), () -> {
-            long start = System.currentTimeMillis();
-            DBCore db = Main.getInstance().getDBCore();
-            String sql;
-            if (id == null) {
-                sql = "INSERT INTO `core_terrenos` (`owner`, `x1`, `x2`, `z1`, `z2`, `world`) VALUES (?, ?, ?, ?, ?, ?);";
-            } else {
-                sql = "UPDATE `core_terrenos` SET `owner` = ?, `x1` = ?, `x2` = ?, `z1` = ?, `z2` = ?, `world` = ? WHERE `id` = ?;";
+    public void saveAndWait() {
+        long start = System.currentTimeMillis();
+        DBCore db = Main.getInstance().getDBCore();
+        String sql;
+        if (id == null) {
+            sql = "INSERT INTO `core_terrenos` (`owner`, `x1`, `x2`, `z1`, `z2`, `world`) VALUES (?, ?, ?, ?, ?, ?);";
+        } else {
+            sql = "UPDATE `core_terrenos` SET `owner` = ?, `x1` = ?, `x2` = ?, `z1` = ?, `z2` = ?, `world` = ? WHERE `id` = ?;";
+        }
+
+        deleteSpawnsIfNotEntry();
+
+        for (Map.Entry<EntityType, Location> entry : spawns.entrySet()) {
+            EntityType entity = entry.getKey();
+            Location location = entry.getValue();
+            try (PreparedStatement ps = db.prepareStatement(
+                    "INSERT INTO `core_terrenos_spawns` (`terreno_id`, `x`, `y`, `z`, `world`, `entity`) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `x` = VALUES(`x`), `y` = VALUES(`y`), `z` = VALUES(`z`), `world` = VALUES(`world`);")) {
+                ps.setInt(1, id);
+                ps.setDouble(2, location.getX());
+                ps.setDouble(3, location.getY());
+                ps.setDouble(4, location.getZ());
+                ps.setString(5, location.getWorld().getName());
+                ps.setString(6, entity.toString());
+                ps.executeUpdate();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        try (PreparedStatement ps = db.prepareStatement(sql, id == null ? PreparedStatement.RETURN_GENERATED_KEYS : PreparedStatement.NO_GENERATED_KEYS)) {
+            ps.setString(1, owner);
+            ps.setInt(2, x1);
+            ps.setInt(3, x2);
+            ps.setInt(4, z1);
+            ps.setInt(5, z2);
+            ps.setString(6, world);
+            if (id != null) {
+                ps.setInt(7, id);
             }
 
-            deleteSpawnsIfNotEntry();
-
-            for (Map.Entry<EntityType, Location> entry : spawns.entrySet()) {
-                EntityType entity = entry.getKey();
-                Location location = entry.getValue();
-                try (PreparedStatement ps = db.prepareStatement(
-                        "INSERT INTO `core_terrenos_spawns` (`terreno_id`, `x`, `y`, `z`, `world`, `entity`) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `x` = VALUES(`x`), `y` = VALUES(`y`), `z` = VALUES(`z`), `world` = VALUES(`world`);")) {
-                    ps.setInt(1, id);
-                    ps.setDouble(2, location.getX());
-                    ps.setDouble(3, location.getY());
-                    ps.setDouble(4, location.getZ());
-                    ps.setString(5, location.getWorld().getName());
-                    ps.setString(6, entity.toString());
-                    ps.executeUpdate();
+            int affectedRows = ps.executeUpdate();
+            if (id == null && affectedRows > 0) {
+                try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        id = generatedKeys.getInt(1);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
 
-            try (PreparedStatement ps = db.prepareStatement(sql, id == null ? PreparedStatement.RETURN_GENERATED_KEYS : PreparedStatement.NO_GENERATED_KEYS)) {
-                ps.setString(1, owner);
-                ps.setInt(2, x1);
-                ps.setInt(3, x2);
-                ps.setInt(4, z1);
-                ps.setInt(5, z2);
-                ps.setString(6, world);
-                if (id != null) {
-                    ps.setInt(7, id);
-                }
+            long end = System.currentTimeMillis() - start;
+            Main.debug("Terreno.save() took " + end + "ms");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-                int affectedRows = ps.executeUpdate();
-                if (id == null && affectedRows > 0) {
-                    try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
-                        if (generatedKeys.next()) {
-                            id = generatedKeys.getInt(1);
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                long end = System.currentTimeMillis() - start;
-                Main.debug("Terreno.save() took " + end + "ms");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+    public void save() {
+        Bukkit.getScheduler().runTaskAsynchronously(Main.getInstance(), () -> {
+            saveAndWait();
         });
     }
 

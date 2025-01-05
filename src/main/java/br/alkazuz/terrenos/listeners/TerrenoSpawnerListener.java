@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 
 public class TerrenoSpawnerListener implements Listener {
-    private HashMap<String, Long> cooldown = new HashMap<>();
     private HashMap<String, Long> cooldownPlaceSpawners = new HashMap<>();
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -74,7 +73,7 @@ public class TerrenoSpawnerListener implements Listener {
         event.getEntity().remove();
     }
 
-    @EventHandler
+    /*@EventHandler
     public void onUseEgg(PlayerInteractEvent e) {
         if (e.getPlayer().getGameMode() == org.bukkit.GameMode.CREATIVE) return;
         ItemStack item = e.getPlayer().getItemInHand();
@@ -137,7 +136,7 @@ public class TerrenoSpawnerListener implements Listener {
         updateItemOrRemove(e.getPlayer(), item);
         cooldown.put(e.getPlayer().getName(), System.currentTimeMillis() + 1000);
 
-    }
+    }*/
 
     public void updateItemOrRemove(Player player, ItemStack item) {
         if (item.getAmount() > 1) {

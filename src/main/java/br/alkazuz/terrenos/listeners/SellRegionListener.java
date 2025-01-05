@@ -34,7 +34,7 @@ public class SellRegionListener implements org.bukkit.event.Listener {
             return;
         }
         e.setCancelled(true);
-        if (region.getOwner().equals(player.getName())) {
+        if (region.getOwner().equalsIgnoreCase(player.getName())) {
             e.getBlock().breakNaturally();
             player.sendMessage("§aVocê removeu a placa de venda do seu terreno.");
         }
@@ -67,7 +67,7 @@ public class SellRegionListener implements org.bukkit.event.Listener {
             return;
         }
 
-        if (region.getOwner().equals(player.getName())) {
+        if (region.getOwner().equalsIgnoreCase(player.getName())) {
             player.sendMessage("§cVocê não pode comprar seu próprio terreno.");
             return;
         }

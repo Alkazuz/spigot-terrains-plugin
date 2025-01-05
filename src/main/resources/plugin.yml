@@ -8,5 +8,7 @@ softdepend:
   - Vault
   - ProtocolLib
 commands:
+  convertworldguard:
+    description: Converte os terrenos do WorldGuard para o plugin
   terreno:
     description: Todos os comandos do plugin

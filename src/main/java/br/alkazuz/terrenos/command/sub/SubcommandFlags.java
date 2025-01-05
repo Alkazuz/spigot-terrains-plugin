@@ -27,7 +27,7 @@ public class SubcommandFlags extends SubCommandBase {
             return true;
         }
 
-        if (!terreno.getOwner().equals(player.getName())) {
+        if (!terreno.getOwner().equalsIgnoreCase(player.getName())) {
             player.sendMessage("§cVocê não é o dono deste terreno.");
             return true;
         }

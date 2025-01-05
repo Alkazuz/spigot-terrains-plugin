@@ -45,10 +45,10 @@ public class Settings {
             PVP_PRICE = config.getInt("Prices.PVP");
             FALL_DAMAGE_PRICE = config.getInt("Prices.FallDamage");
             DEFAULT_WORLD = config.getString("DefaultWorld");
-            if (config.contains("Prices")) {
-                for (String key : config.getConfigurationSection("Prices").getKeys(false)) {
+            if (config.contains("PricesStorage")) {
+                for (String key : config.getConfigurationSection("PricesStorage").getKeys(false)) {
                     Material material = Material.getMaterial(key);
-                    double price = config.getDouble("Prices." + key);
+                    double price = config.getDouble("PricesStorage." + key);
                     MATERIAL_PRICES.put(material, price);
                 }
             }

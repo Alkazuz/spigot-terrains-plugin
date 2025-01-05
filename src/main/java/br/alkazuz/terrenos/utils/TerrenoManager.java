@@ -28,6 +28,10 @@ public class TerrenoManager {
     private static final HashSet<Integer> alreadyLoadedChunks = new HashSet<>();
     private static final HashMap<Integer, Terreno> terrenos = new HashMap<>();
 
+    public static void addTerreno(Terreno terreno) {
+        terrenos.put(Serializer.computeHash(terreno), terreno);
+    }
+
     public static void loadTerrainsInRadius(Chunk centerChunk, int radius) {
         World world = centerChunk.getWorld();
         int loadedCount = 0;

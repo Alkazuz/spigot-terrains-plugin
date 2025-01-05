@@ -2,6 +2,7 @@ package br.alkazuz.terrenos;
 
 
 import br.alkazuz.terrenos.command.CommandTerreno;
+import br.alkazuz.terrenos.command.ConvertWorldGuard;
 import br.alkazuz.terrenos.command.SubCommands;
 import br.alkazuz.terrenos.config.Settings;
 import br.alkazuz.terrenos.config.manager.ConfigManager;
@@ -96,7 +97,7 @@ public class Main extends JavaPlugin {
         pm.registerEvents(new ItemSpawnTerrainListener(), this);
 
         getCommand("terreno").setExecutor(new CommandTerreno());
-
+        // getCommand("convertworldguard").setExecutor(new ConvertWorldGuard());
     }
 
     private void startDatabase() {

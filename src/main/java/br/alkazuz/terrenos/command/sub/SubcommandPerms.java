@@ -26,8 +26,13 @@ public class SubcommandPerms extends SubCommandBase {
             return true;
         }
 
-        if (!terreno.getOwner().equals(player.getName())) {
+        if (!terreno.getOwner().equalsIgnoreCase(player.getName())) {
             player.sendMessage("§cVocê não é o dono deste terreno.");
+            return true;
+        }
+
+        if (args.length != 2) {
+            player.sendMessage("§cUtilize /terreno perms <jogador>");
             return true;
         }
 

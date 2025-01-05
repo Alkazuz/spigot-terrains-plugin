@@ -26,7 +26,7 @@ public class SubcommandVender extends SubCommandBase {
             return true;
         }
 
-        if (!region.getOwner().equals(player.getName())) {
+        if (!region.getOwner().equalsIgnoreCase(player.getName())) {
             player.sendMessage("§cVocê não é dono deste terreno.");
             return true;
         }
